@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Farmer Profile - SoilMate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        :root {
+            --color-accent: #059669;
+        }
+        .dark {
+            background-color: #0F172A;
+            color: #F3F4F6;
+        }
+        body { transition: background-color 0.3s, color 0.3s; }
+        
+        /* Input fields that look like lines for easier reading */
+        .friendly-input {
+            border: none;
+            border-bottom: 2px solid #E5E7EB;
+            padding: 10px 0;
+            width: 100%;
+            background: transparent;
+            font-size: 1.1rem;
+            transition: border-color 0.3s;
+        }
+        .friendly-input:focus {
+            outline: none;
+            border-bottom-color: var(--color-accent);
+        }
+    </style>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="bg-green-50 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
+        
+        <!-- Header with Back Button -->
+        <div class="bg-green-600 p-6 text-white flex items-center">
+            <a href="/agriculture" class="bg-white/20 hover:bg-white/30 p-2 rounded-full mr-4 transition">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1 class="text-2xl font-bold">My Farm Profile</h1>
+        </div>
+
+        <div class="p-8">
+            <!-- ID Card Section -->
+            <div class="flex flex-col md:flex-row items-center mb-10">
+                <div class="relative">
+                    <img src="https://placehold.co/150x150/059669/ffffff?text=SB" class="w-32 h-32 rounded-full border-4 border-green-100 shadow-lg mb-4 md:mb-0 md:mr-8">
+                    <button class="absolute bottom-0 right-8 md:right-8 bg-gray-800 text-white p-2 rounded-full shadow-md hover:bg-gray-700" title="Change Photo">
+                        <i class="fa-solid fa-camera"></i>
+                    </button>
+                </div>
+                <div class="text-center md:text-left">
+                    <h2 class="text-3xl font-extrabold text-gray-800 dark:text-white">Subhajit</h2>
+                    <p class="text-green-600 font-medium"><i class="fa-solid fa-tractor mr-2"></i>Lead Farmer</p>
+                    <p class="text-gray-500 text-sm mt-1">Member ID: <span class="font-mono">SM-8872</span></p>
+                </div>
+            </div>
+
+            <!-- Editable Details Form -->
+            <form onsubmit="saveProfile(event)" class="space-y-6">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Farm Name -->
+                    <div>
+                        <label class="block text-gray-500 text-sm font-bold mb-1 uppercase"><i class="fa-solid fa-seedling mr-1"></i> Farm Name</label>
+                        <input type="text" value="Green Valley Fields" class="friendly-input dark:text-white" placeholder="Name your farm">
+                    </div>
+
+                    <!-- Location -->
+                    <div>
+                        <label class="block text-gray-500 text-sm font-bold mb-1 uppercase"><i class="fa-solid fa-location-dot mr-1"></i> Location</label>
+                        <input type="text" value="West Bengal, India" class="friendly-input dark:text-white" placeholder="Village or City">
+                    </div>
+
+                    <!-- Phone -->
+                    <div>
+                        <label class="block text-gray-500 text-sm font-bold mb-1 uppercase"><i class="fa-solid fa-phone mr-1"></i> Mobile Number</label>
+                        <input type="tel" value="+91 98765 43210" class="friendly-input dark:text-white" placeholder="For SMS alerts">
+                    </div>
+
+                    <!-- Land Size -->
+                    <div>
+                        <label class="block text-gray-500 text-sm font-bold mb-1 uppercase"><i class="fa-solid fa-ruler-combined mr-1"></i> Land Size (Acres)</label>
+                        <input type="number" value="4.5" class="friendly-input dark:text-white">
+                    </div>
+                </div>
+
+                <!-- Crops Planted Badges -->
+                <div class="mt-6">
+                    <label class="block text-gray-500 text-sm font-bold mb-3 uppercase">Current Crops</label>
+                    <div class="flex flex-wrap gap-2">
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-semibold border border-yellow-200">🌽 Maize</span>
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-semibold border border-green-200">🍚 Rice</span>
+                        <button type="button" class="text-gray-400 border border-dashed border-gray-300 px-3 py-1 rounded-full hover:bg-gray-50 text-sm">+ Add Crop</button>
+                    </div>
+                </div>
+
+                <!-- Save Button -->
+                <div class="pt-6 flex justify-end">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-xl shadow-lg transform transition hover:scale-105 flex items-center">
+                        <i class="fa-solid fa-floppy-disk mr-2"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Theme check
+        if (localStorage.getItem('theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+
+        function saveProfile(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalText = btn.innerHTML;
+            
+            btn.innerHTML = '<i class="fa-solid fa-check mr-2"></i> Saved!';
+            btn.classList.remove('bg-green-600');
+            btn.classList.add('bg-gray-800');
+            
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.classList.add('bg-green-600');
+                btn.classList.remove('bg-gray-800');
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

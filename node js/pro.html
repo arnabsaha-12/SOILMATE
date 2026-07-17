@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brainware University - Student Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Import Google Fonts for a techy feel */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap'); /* Monospace for code-like text */
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #1a202c, #2d3748); /* Dark, subtle gradient */
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Align to top */
+            padding: 4rem 1rem;
+            overflow-x: hidden;
+            color: #e2e8f0; /* Light text color */
+            position: relative;
+        }
+
+        /* Subtle background pattern (circuit board/binary dots) */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#4a5568 1px, transparent 1px), radial-gradient(#4a5568 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            opacity: 0.05; /* Very subtle */
+            z-index: -1;
+        }
+
+        .main-container {
+            width: 100%;
+            max-width: 1000px; /* Wider for more content */
+            background-color: rgba(30, 41, 59, 0.9); /* Dark blue-grey with transparency */
+            backdrop-filter: blur(12px); /* Glassmorphism effect */
+            -webkit-backdrop-filter: blur(12px); /* Safari support */
+            border-radius: 1.5rem; /* More rounded */
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5); /* Deeper shadow */
+            animation: fadeInScale 0.8s ease-out forwards;
+            border: 1px solid rgba(74, 85, 104, 0.5); /* Subtle border */
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.95) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .header-gradient {
+            background: linear-gradient(to right, #4c51bf, #667eea); /* Deep purple-blue gradient */
+            color: white;
+            padding: 2rem 2.5rem;
+            border-top-left-radius: 1.5rem;
+            border-top-right-radius: 1.5rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden; /* For subtle header animation */
+        }
+
+        .header-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: headerPulse 15s infinite alternate;
+        }
+
+        @keyframes headerPulse {
+            0% { transform: scale(0.8) rotate(0deg); opacity: 0.1; }
+            50% { transform: scale(1.2) rotate(10deg); opacity: 0.2; }
+            100% { transform: scale(0.8) rotate(0deg); opacity: 0.1; }
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 8px rgba(76, 81, 191, 0.5), 0 0 20px rgba(0, 255, 255, 0.7); /* Outer glow */
+            margin-top: -60px; /* Pulls it up into the header */
+            z-index: 10;
+            position: relative;
+            animation: avatarPopIn 0.6s ease-out forwards 0.5s; /* Delayed animation */
+        }
+
+        @keyframes avatarPopIn {
+            from { transform: scale(0.5); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .profile-name {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-top: 1rem;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+            animation: slideInFromTop 0.8s ease-out forwards 0.7s;
+        }
+
+        .profile-id {
+            font-family: 'Fira Code', monospace; /* Coding font */
+            font-size: 1.2rem;
+            color: #cbd5e0;
+            margin-top: 0.5rem;
+            animation: fadeIn 0.8s ease-out forwards 0.9s;
+        }
+
+        .section-header {
+            background-color: #2d3748; /* Darker background for headers */
+            color: #90cdf4; /* Light blue text */
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #4a5568;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 1.25rem;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            border-radius: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .section-header:hover {
+            background-color: #4a5568;
+            color: #e2e8f0;
+        }
+
+        .section-content {
+            background-color: rgba(45, 55, 72, 0.8); /* Slightly transparent dark grey */
+            padding: 1.5rem 2rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            max-height: 0; /* For accordion animation */
+            transition: max-height 0.5s ease-out, padding 0.5s ease-out, opacity 0.5s ease-out;
+            opacity: 0;
+        }
+
+        .section-content.active {
+            max-height: 1000px; /* Sufficiently large value */
+            padding: 1.5rem 2rem;
+            opacity: 1;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            color: #a0aec0; /* Lighter grey for labels */
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+        }
+
+        .form-input-display {
+            background-color: #2a3342; /* Dark input background */
+            border: 1px solid #4a5568;
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+            width: 100%;
+            color: #e2e8f0; /* Light text */
+            font-family: 'Fira Code', monospace; /* Coding font for inputs */
+            font-size: 0.95rem;
+            cursor: default;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input-display:focus {
+            outline: none;
+            border-color: #63b3ed; /* Light blue focus */
+        }
+
+        .grid-2-cols {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .profile-button {
+            background: linear-gradient(45deg, #667eea, #4c51bf); /* Purple-blue gradient */
+            color: white;
+            padding: 0.8rem 2rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none; /* For anchor tags */
+        }
+
+        .profile-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+            background: linear-gradient(45deg, #4c51bf, #667eea);
+        }
+
+        .profile-button.back {
+            background: linear-gradient(45deg, #4a5568, #2d3748);
+        }
+        .profile-button.back:hover {
+            background: linear-gradient(45deg, #2d3748, #4a5568);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Progress Bar for Skills (example) */
+        .skill-bar-container {
+            background-color: #4a5568;
+            border-radius: 0.5rem;
+            height: 10px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+        }
+
+        .skill-bar {
+            height: 100%;
+            background: linear-gradient(to right, #63b3ed, #4299e1); /* Blue gradient */
+            border-radius: 0.5rem;
+            width: 0; /* Initial state for animation */
+            transition: width 1s ease-out;
+        }
+
+        /* Animation for skill bars */
+        .skill-bar.animate {
+            width: var(--skill-width, 0%);
+        }
+
+        /* Message box styles (similar to other pages) */
+        .message-box {
+            background-color: #ffebee; /* Light red */
+            color: #c62828; /* Dark red */
+            border: 1px solid #ffcdd2;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+            display: none; /* Hidden by default */
+            text-align: center;
+        }
+        .message-box.success {
+            background-color: #e8f5e9; /* Light green */
+            color: #2e7d32; /* Dark green */
+            border-color: #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <header class="header-gradient">
+            <!-- Avatar is positioned relative to this header -->
+            <h1 class="profile-name" id="profileFullName">Loading Name...</h1>
+            <p class="profile-id" id="profileStudentId">Loading ID...</p>
+        </header>
+        <div class="flex justify-center -mt-16 mb-8 relative z-20">
+            <img src="https://placehold.co/120x120/4c51bf/ffffff?text=AV" alt="Profile Avatar" class="profile-avatar" id="profileAvatar">
+        </div>
+
+        <div class="p-6 md:p-8 pt-0">
+            <div id="profileMessageBox" class="message-box mb-4"></div>
+
+            <!-- Accordion Section: Personal & Contact Information -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="personalInfo">
+                    <i class="fas fa-user-circle mr-3"></i> Personal & Contact Information
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="personalInfo" class="section-content">
+                    <div class="grid-2-cols">
+                        <div class="form-group">
+                            <label class="form-label">Campus:</label>
+                            <input type="text" id="profileCampus" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Batch Name:</label>
+                            <input type="text" id="profileBatchName" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">University Mail-ID:</label>
+                            <input type="text" id="profileUniversityMail" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">First Name:</label>
+                            <input type="text" id="profileFirstName" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Middle Name:</label>
+                            <input type="text" id="profileMiddleName" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Surname:</label>
+                            <input type="text" id="profileSurname" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mobile 1:</label>
+                            <input type="text" id="profileMobile1" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mobile 2:</label>
+                            <input type="text" id="profileMobile2" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Landline:</label>
+                            <input type="text" id="profileLandline" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Blood Group:</label>
+                            <input type="text" id="profileBloodGroup" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Height (cm):</label>
+                            <input type="text" id="profileHeight" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Weight (kg):</label>
+                            <input type="text" id="profileWeight" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Date of Birth:</label>
+                            <input type="text" id="profileDOB" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Place of Birth:</label>
+                            <input type="text" id="profilePOB" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Religion:</label>
+                            <input type="text" id="profileReligion" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Caste:</label>
+                            <input type="text" id="profileCaste" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Nationality:</label>
+                            <input type="text" id="profileNationality" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Career Goal:</label>
+                            <input type="text" id="profileCareerGoal" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Major Disease:</label>
+                            <input type="text" id="profileMajorDisease" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Why Choose This Course:</label>
+                            <textarea id="profileWhyCourse" class="form-input-display" rows="2" disabled>N/A</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hobby:</label>
+                            <textarea id="profileHobby" class="form-input-display" rows="2" disabled>N/A</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Student ABC ID:</label>
+                            <input type="text" id="profileABCID" class="form-input-display" disabled value="Loading...">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Section: Academic Qualifications -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="qualificationDetails">
+                    <i class="fas fa-graduation-cap mr-3"></i> Academic Qualifications
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="qualificationDetails" class="section-content">
+                    <h4 class="text-lg font-semibold text-white mb-3">Class X Details</h4>
+                    <div class="grid-2-cols mb-6">
+                        <div class="form-group">
+                            <label class="form-label">Institution:</label>
+                            <input type="text" id="classXInstitution" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Board:</label>
+                            <input type="text" id="classXBoard" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medium:</label>
+                            <input type="text" id="classXMedium" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Percentage:</label>
+                            <input type="text" id="classXPercentage" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year of Passing:</label>
+                            <input type="text" id="classXYear" class="form-input-display" disabled value="N/A">
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-semibold text-white mb-3">Class XII Details</h4>
+                    <div class="grid-2-cols mb-6">
+                        <div class="form-group">
+                            <label class="form-label">Institution:</label>
+                            <input type="text" id="classXIIInstitution" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Board:</label>
+                            <input type="text" id="classXIIBoard" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Medium:</label>
+                            <input type="text" id="classXIIMedium" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Percentage:</label>
+                            <input type="text" id="classXIIPercentage" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year of Passing:</label>
+                            <input type="text" id="classXIIYear" class="form-input-display" disabled value="N/A">
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-semibold text-white mb-3">Graduation Details</h4>
+                    <div class="grid-2-cols">
+                        <div class="form-group">
+                            <label class="form-label">Institution:</label>
+                            <input type="text" id="graduationInstitution" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Board:</label>
+                            <input type="text" id="graduationBoard" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Percentage:</label>
+                            <input type="text" id="graduationPercentage" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Year of Passing:</label>
+                            <input type="text" id="graduationYear" class="form-input-display" disabled value="N/A">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Section: Address Details -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="addressDetails">
+                    <i class="fas fa-map-marker-alt mr-3"></i> Address Details
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="addressDetails" class="section-content">
+                    <h4 class="text-lg font-semibold text-white mb-3">Present Address</h4>
+                    <div class="grid-2-cols mb-6">
+                        <div class="form-group">
+                            <label class="form-label">Address:</label>
+                            <textarea id="presentAddress" class="form-input-display" rows="2" disabled>Loading...</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City / Town:</label>
+                            <input type="text" id="presentCity" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Area:</label>
+                            <input type="text" id="presentArea" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">District:</label>
+                            <input type="text" id="presentDistrict" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">P.O.:</label>
+                            <input type="text" id="presentPO" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">P.S.:</label>
+                            <input type="text" id="presentPS" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Aadhar Card No.:</label>
+                            <input type="text" id="presentAadhar" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pin:</label>
+                            <input type="text" id="presentPin" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State:</label>
+                            <input type="text" id="presentState" class="form-input-display" disabled value="Loading...">
+                        </div>
+                    </div>
+
+                    <h4 class="text-lg font-semibold text-white mb-3">Permanent Address</h4>
+                    <div class="grid-2-cols">
+                        <div class="form-group">
+                            <label class="form-label">Address:</label>
+                            <textarea id="permanentAddress" class="form-input-display" rows="2" disabled>Loading...</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">City / Town:</label>
+                            <input type="text" id="permanentCity" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">District:</label>
+                            <input type="text" id="permanentDistrict" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">P.O.:</label>
+                            <input type="text" id="permanentPO" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">P.S.:</label>
+                            <input type="text" id="permanentPS" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Aadhar Card No.:</label>
+                            <input type="text" id="permanentAadhar" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Pin:</label>
+                            <input type="text" id="permanentPin" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">State:</label>
+                            <input type="text" id="permanentState" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email:</label>
+                            <input type="text" id="permanentEmail" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">FB Account No:</label>
+                            <input type="text" id="permanentFBAccount" class="form-input-display" disabled value="N/A">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Section: Guardian Details -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="guardianDetails">
+                    <i class="fas fa-users mr-3"></i> Guardian Details
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="guardianDetails" class="section-content">
+                    <div class="grid-2-cols">
+                        <div class="form-group">
+                            <label class="form-label">Student Guardian:</label>
+                            <input type="text" id="guardianType" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father's Name:</label>
+                            <input type="text" id="fatherName" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father's Mobile:</label>
+                            <input type="text" id="fatherMobile" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father's Landline:</label>
+                            <input type="text" id="fatherLandline" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father's E-Mail:</label>
+                            <input type="text" id="fatherEmail" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Father's Profession:</label>
+                            <input type="text" id="fatherProfession" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mother's Name:</label>
+                            <input type="text" id="motherName" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mother's Contact No:</label>
+                            <input type="text" id="motherContact" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mother's Profession:</label>
+                            <input type="text" id="motherProfession" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mother's E-Mail:</label>
+                            <input type="text" id="motherEmail" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">No Of Brother(s):</label>
+                            <input type="text" id="numBrothers" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">No Of Sister(s):</label>
+                            <input type="text" id="numSisters" class="form-input-display" disabled value="Loading...">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hostel Border:</label>
+                            <input type="text" id="hostelBorder" class="form-input-display" disabled value="Loading...">
+                        </div>
+                    </div>
+                    <h4 class="text-lg font-semibold text-white mb-3 mt-6">Local Guardian Details</h4>
+                    <div class="grid-2-cols">
+                        <div class="form-group">
+                            <label class="form-label">Local Guardian Name:</label>
+                            <input type="text" id="localGuardianName" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Local Guardian Contact:</label>
+                            <input type="text" id="localGuardianContact" class="form-input-display" disabled value="N/A">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Local Guardian Mobile:</label>
+                            <input type="text" id="localGuardianMobile" class="form-input-display" disabled value="N/A">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Accordion Section: Awards & Achievements -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="awardsAchievements">
+                    <i class="fas fa-trophy mr-3"></i> Awards & Achievements
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="awardsAchievements" class="section-content">
+                    <p class="text-gray-400">No awards or achievements recorded yet.</p>
+                    <!-- In a real application, this would be dynamically populated -->
+                </div>
+            </div>
+
+            <!-- Example Skills Section (Optional, for "coding passionate" feel) -->
+            <div class="accordion-item">
+                <div class="section-header" data-target="codingSkills">
+                    <i class="fas fa-code mr-3"></i> Coding Skills & Progress
+                    <i class="fas fa-chevron-down toggle-icon transition-transform duration-300"></i>
+                </div>
+                <div id="codingSkills" class="section-content">
+                    <div class="mb-3">
+                        <label class="form-label">Python:</label>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar" style="--skill-width: 85%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">JavaScript:</label>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar" style="--skill-width: 70%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">SQL:</label>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar" style="--skill-width: 90%;"></div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Web Development (HTML/CSS):</label>
+                        <div class="skill-bar-container">
+                            <div class="skill-bar" style="--skill-width: 80%;"></div>
+                        </div>
+                    </div>
+                    <p class="text-sm text-gray-400 mt-4">These are illustrative skill levels. Real data would be managed via a dedicated system.</p>
+                </div>
+            </div>
+
+
+            <div class="button-group">
+                <a href="/dashboard" class="profile-button back">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to Dashboard
+                </a>
+                <button type="button" class="profile-button" id="editProfileBtn">
+                    <i class="fas fa-edit mr-2"></i> Edit Profile
+                </button>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Define the base URL for your Node.js frontend routes
+    const frontendBaseUrl = 'http://localhost:3000/';
+
+    // Get references to DOM elements
+    const profileFullName = document.getElementById('profileFullName');
+    const profileStudentId = document.getElementById('profileStudentId');
+    const profileAvatar = document.getElementById('profileAvatar');
+    const profileMessageBox = document.getElementById('profileMessageBox');
+    const editProfileBtn = document.getElementById('editProfileBtn');
+
+    // --- Personal & Contact Info ---
+    const profileCampus = document.getElementById('profileCampus');
+    const profileBatchName = document.getElementById('profileBatchName');
+    const profileUniversityMail = document.getElementById('profileUniversityMail');
+    const profileFirstName = document.getElementById('profileFirstName');
+    const profileMiddleName = document.getElementById('profileMiddleName');
+    const profileSurname = document.getElementById('profileSurname');
+    const profileMobile1 = document.getElementById('profileMobile1');
+    const profileMobile2 = document.getElementById('profileMobile2');
+    const profileLandline = document.getElementById('profileLandline');
+    const profileBloodGroup = document.getElementById('profileBloodGroup');
+    const profileHeight = document.getElementById('profileHeight');
+    const profileWeight = document.getElementById('profileWeight');
+    const profileDOB = document.getElementById('profileDOB');
+    const profilePOB = document.getElementById('profilePOB');
+    const profileReligion = document.getElementById('profileReligion');
+    const profileCaste = document.getElementById('profileCaste');
+    const profileNationality = document.getElementById('profileNationality');
+    const profileCareerGoal = document.getElementById('profileCareerGoal');
+    const profileMajorDisease = document.getElementById('profileMajorDisease');
+    const profileWhyCourse = document.getElementById('profileWhyCourse');
+    const profileHobby = document.getElementById('profileHobby');
+    const profileABCID = document.getElementById('profileABCID');
+
+    // --- Academic Qualifications ---
+    const classXInstitution = document.getElementById('classXInstitution');
+    const classXBoard = document.getElementById('classXBoard');
+    const classXMedium = document.getElementById('classXMedium');
+    const classXPercentage = document.getElementById('classXPercentage');
+    const classXYear = document.getElementById('classXYear');
+    const classXIIInstitution = document.getElementById('classXIIInstitution');
+    const classXIIBoard = document.getElementById('classXIIBoard');
+    const classXIIMedium = document.getElementById('classXIIMedium');
+    const classXIIPercentage = document.getElementById('classXIIPercentage');
+    const classXIIYear = document.getElementById('classXIIYear');
+    const graduationInstitution = document.getElementById('graduationInstitution');
+    const graduationBoard = document.getElementById('graduationBoard');
+    const graduationPercentage = document.getElementById('graduationPercentage');
+    const graduationYear = document.getElementById('graduationYear');
+
+    // --- Address Details ---
+    const presentAddress = document.getElementById('presentAddress');
+    const presentCity = document.getElementById('presentCity');
+    const presentArea = document.getElementById('presentArea');
+    const presentDistrict = document.getElementById('presentDistrict');
+    const presentPO = document.getElementById('presentPO');
+    const presentPS = document.getElementById('presentPS');
+    const presentAadhar = document.getElementById('presentAadhar');
+    const presentPin = document.getElementById('presentPin');
+    const presentState = document.getElementById('presentState');
+    const permanentAddress = document.getElementById('permanentAddress');
+    const permanentCity = document.getElementById('permanentCity');
+    const permanentDistrict = document.getElementById('permanentDistrict');
+    const permanentPO = document.getElementById('permanentPO');
+    const permanentPS = document.getElementById('permanentPS');
+    const permanentAadhar = document.getElementById('permanentAadhar');
+    const permanentPin = document.getElementById('permanentPin');
+    const permanentState = document.getElementById('permanentState');
+    const permanentEmail = document.getElementById('permanentEmail');
+    const permanentFBAccount = document.getElementById('permanentFBAccount');
+
+    // --- Guardian Details ---
+    const guardianType = document.getElementById('guardianType');
+    const fatherName = document.getElementById('fatherName');
+    const fatherMobile = document.getElementById('fatherMobile');
+    const fatherLandline = document.getElementById('fatherLandline');
+    const fatherEmail = document.getElementById('fatherEmail');
+    const fatherProfession = document.getElementById('fatherProfession');
+    const motherName = document.getElementById('motherName');
+    const motherContact = document.getElementById('motherContact');
+    const motherProfession = document.getElementById('motherProfession');
+    const motherEmail = document.getElementById('motherEmail');
+    const numBrothers = document.getElementById('numBrothers');
+    const numSisters = document.getElementById('numSisters');
+    const hostelBorder = document.getElementById('hostelBorder');
+    const localGuardianName = document.getElementById('localGuardianName');
+    const localGuardianContact = document.getElementById('localGuardianContact');
+    const localGuardianMobile = document.getElementById('localGuardianMobile');
+
+
+    // Function to display messages in the custom message box
+    function showMessage(message, type = 'error') {
+        if (profileMessageBox) {
+            profileMessageBox.textContent = message;
+            profileMessageBox.className = `message-box ${type}`;
+            profileMessageBox.style.display = 'block';
+            setTimeout(() => {
+                profileMessageBox.style.display = 'none';
+            }, 5000);
+        } else {
+            console.error('Profile message box element not found!');
+        }
+    }
+
+    // Function to populate profile fields with data
+    function populateProfile(studentData) {
+        // Main Header Info
+        profileFullName.textContent = studentData.full_name || 'N/A';
+        profileStudentId.textContent = studentData.student_id || 'N/A';
+        // You can generate a dynamic avatar based on name initials or use a placeholder
+        // profileAvatar.src = `https://placehold.co/120x120/4c51bf/ffffff?text=${studentData.full_name ? studentData.full_name.charAt(0).toUpperCase() : 'AV'}`;
+
+        // Personal & Contact Info
+        profileCampus.value = studentData.campus || 'N/A';
+        profileBatchName.value = studentData.batch_name || 'N/A';
+        profileUniversityMail.value = studentData.university_mail_id || 'N/A';
+        profileFirstName.value = studentData.first_name || 'N/A';
+        profileMiddleName.value = studentData.middle_name || 'N/A';
+        profileSurname.value = studentData.surname || 'N/A';
+        profileMobile1.value = studentData.mobile_1 || 'N/A';
+        profileMobile2.value = studentData.mobile_2 || 'N/A';
+        profileLandline.value = studentData.landline || 'N/A';
+        profileBloodGroup.value = studentData.blood_group || 'N/A';
+        profileHeight.value = studentData.height || 'N/A';
+        profileWeight.value = studentData.weight || 'N/A';
+        profileDOB.value = studentData.date_of_birth || 'N/A';
+        profilePOB.value = studentData.place_of_birth || 'N/A';
+        profileReligion.value = studentData.religion || 'N/A';
+        profileCaste.value = studentData.caste || 'N/A';
+        profileNationality.value = studentData.nationality || 'N/A';
+        profileCareerGoal.value = studentData.career_goal || 'N/A';
+        profileMajorDisease.value = studentData.major_disease || 'N/A';
+        profileWhyCourse.value = studentData.why_choose_this_course || 'N/A';
+        profileHobby.value = studentData.hobby || 'N/A';
+        profileABCID.value = studentData.student_abc_id || 'N/A';
+
+        // Academic Qualifications
+        // Class X
+        classXInstitution.value = studentData.class_x_institution || 'N/A';
+        classXBoard.value = studentData.class_x_board || 'N/A';
+        classXMedium.value = studentData.class_x_medium || 'N/A';
+        classXPercentage.value = studentData.class_x_percentage || 'N/A';
+        classXYear.value = studentData.class_x_year_of_passing || 'N/A';
+        // Class XII
+        classXIIInstitution.value = studentData.class_xii_institution || 'N/A';
+        classXIIBoard.value = studentData.class_xii_board || 'N/A';
+        classXIIMedium.value = studentData.class_xii_medium || 'N/A';
+        classXIIPercentage.value = studentData.class_xii_percentage || 'N/A';
+        classXIIYear.value = studentData.class_xii_year_of_passing || 'N/A';
+        // Graduation
+        graduationInstitution.value = studentData.graduation_institution || 'N/A';
+        graduationBoard.value = studentData.graduation_board || 'N/A';
+        graduationPercentage.value = studentData.graduation_percentage || 'N/A';
+        graduationYear.value = studentData.graduation_year_of_passing || 'N/A';
+
+        // Address Details
+        // Present Address
+        presentAddress.value = studentData.present_address || 'N/A';
+        presentCity.value = studentData.present_city_town || 'N/A';
+        presentArea.value = studentData.present_area || 'N/A';
+        presentDistrict.value = studentData.present_district || 'N/A';
+        presentPO.value = studentData.present_po || 'N/A';
+        presentPS.value = studentData.present_ps || 'N/A';
+        presentAadhar.value = studentData.present_aadhar_card_no || 'N/A';
+        presentPin.value = studentData.present_pin || 'N/A';
+        presentState.value = studentData.present_state || 'N/A';
+        // Permanent Address
+        permanentAddress.value = studentData.permanent_address || 'N/A';
+        permanentCity.value = studentData.permanent_city_town || 'N/A';
+        permanentDistrict.value = studentData.permanent_district || 'N/A';
+        permanentPO.value = studentData.permanent_po || 'N/A';
+        permanentPS.value = studentData.permanent_ps || 'N/A';
+        permanentAadhar.value = studentData.permanent_aadhar_card_no || 'N/A';
+        permanentPin.value = studentData.permanent_pin || 'N/A';
+        permanentState.value = studentData.permanent_state || 'N/A';
+        permanentEmail.value = studentData.email || 'N/A';
+        permanentFBAccount.value = studentData.fb_account_no || 'N/A';
+
+        // Guardian Details
+        guardianType.value = studentData.student_guardian || 'N/A';
+        fatherName.value = studentData.father_name || 'N/A';
+        fatherMobile.value = studentData.father_mobile || 'N/A';
+        fatherLandline.value = studentData.father_landline || 'N/A';
+        fatherEmail.value = studentData.father_e_mail || 'N/A';
+        fatherProfession.value = studentData.father_profession || 'N/A';
+        motherName.value = studentData.mother_name || 'N/A';
+        motherContact.value = studentData.mother_contact_no || 'N/A';
+        motherProfession.value = studentData.mother_profession || 'N/A';
+        motherEmail.value = studentData.mother_e_mail || 'N/A';
+        numBrothers.value = studentData.no_of_brothers || 'N/A';
+        numSisters.value = studentData.no_of_sisters || 'N/A';
+        hostelBorder.value = studentData.hostel_border || 'N/A';
+        localGuardianName.value = studentData.local_guardian_name || 'N/A';
+        localGuardianContact.value = studentData.local_guardian_contact || 'N/A';
+        localGuardianMobile.value = studentData.local_guardian_mobile || 'N/A';
+
+        // Animate skill bars (if present)
+        document.querySelectorAll('.skill-bar').forEach(bar => {
+            bar.classList.add('animate');
+        });
+    }
+
+    // Fetch student data from backend (simulated for now, replace with actual API call)
+    async function fetchStudentProfile(studentId) {
+        // In a real application, you would make an AJAX call here:
+        // const response = await fetch(`${apiBaseUrl}get_student_profile.php?student_id=${studentId}`);
+        // const data = await response.json();
+        // if (data.success) { populateProfile(data.student_profile); } else { showMessage(data.message, 'error'); }
+
+        // --- SIMULATED DATA (REPLACE WITH REAL BACKEND FETCH) ---
+        // This data matches the fields from your screenshots
+        const simulatedData = {
+            success: true,
+            student_profile: {
+                student_id: "BWU/BCA/23/215",
+                campus: "Barasat",
+                university_mail_id: "bwubca23215@brainwareuniversity.ac.in",
+                first_name: "SUBHAJIT",
+                middle_name: "",
+                surname: "BHATTACHARJEE",
+                mobile_1: "7908402204",
+                mobile_2: "9932267834",
+                blood_group: "AB+",
+                weight: "0",
+                date_of_birth: "2005-11-08",
+                place_of_birth: "",
+                religion: "Hinduism",
+                nationality: "Indian",
+                why_choose_this_course: "",
+                hobby: "Acting, Cooking, Dance, Drama, Embroidery, Indoor Game, Movie, Music, Painting, Photography, Poem, Tubbing",
+                student_abc_id: "876188688558",
+                batch_name: "BCA-2023-SEC-D (Gr-2)",
+                landline: "",
+                career_goal: "",
+                caste: "General",
+                major_disease: "",
+                // Qualification Details
+                class_x_institution: "RAIGANJ CORONATION HIGH SCHOOL",
+                class_x_board: "WEST BENGAL BOARD OF SECONDARY EDUCATION",
+                class_x_medium: "Bengali",
+                class_x_percentage: "79.57",
+                class_x_year_of_passing: "2021", // Example year
+                class_xii_institution: "RAIGANJ CORONATION HIGH SCHOOL",
+                class_xii_board: "WEST BENGAL COUNCIL OF HIGHER SECONDARY EDUC",
+                class_xii_medium: "Bengali",
+                class_xii_percentage: "76.6",
+                class_xii_year_of_passing: "2023", // Example year
+                graduation_institution: "",
+                graduation_board: "",
+                graduation_percentage: "0",
+                graduation_year_of_passing: "",
+                // Present Address Details
+                present_address: "BIRNAGAR,RAIGANJ,RAIGANJ,RAIGANJ UTTAR DINAJPUR,WEST BENGAL-733134",
+                present_city_town: "RAIGANJ",
+                present_area: "RAIGANJ",
+                present_district: "North Dinajpur",
+                present_po: "RAIGANJ UTTAR DINAJPUR",
+                present_ps: "RAIGANJ",
+                present_aadhar_card_no: "368662384674",
+                present_pin: "733134",
+                present_state: "West Bengal",
+                // Permanent Address Details (using same as present for now, adjust as needed)
+                permanent_address: "BIRNAGAR,RAIGANJ,RAIGANJ,RAIGANJ UTTAR DINAJPUR,WEST BENGAL-733134",
+                permanent_city_town: "RAIGANJ",
+                permanent_district: "North Dinajpur",
+                permanent_po: "RAIGANJ UTTAR DINAJPUR",
+                permanent_ps: "RAIGANJ",
+                permanent_aadhar_card_no: "368662384674",
+                permanent_pin: "733134",
+                permanent_state: "West Bengal",
+                email: "subratabhtt9@gmail.com",
+                fb_account_no: "",
+                // Guardian Details
+                student_guardian: "Father", // Based on radio button selection
+                father_name: "SUBRATA BHATTACHARJEE",
+                father_mobile: "9932267834",
+                father_landline: "",
+                father_e_mail: "",
+                father_profession: "Service",
+                mother_name: "JAYATI BHATTACHARJEE",
+                mother_contact_no: "8250604437",
+                mother_profession: "",
+                mother_e_mail: "",
+                no_of_brothers: "0",
+                no_of_sisters: "0",
+                hostel_border: "No", // Based on radio button selection
+                local_guardian_name: "",
+                local_guardian_contact: "",
+                local_guardian_mobile: ""
+            }
+        };
+        // --- END SIMULATED DATA ---
+
+        return new Promise(resolve => {
+            setTimeout(() => {
+                if (simulatedData.success) {
+                    populateProfile(simulatedData.student_profile);
+                    showMessage('Profile loaded successfully!', 'success');
+                } else {
+                    showMessage('Failed to load profile: ' + simulatedData.message, 'error');
+                }
+                resolve();
+            }, 1000); // Simulate network delay
+        });
+    }
+
+    // Accordion functionality
+    document.querySelectorAll('.section-header').forEach(header => {
+        header.addEventListener('click', () => {
+            const targetId = header.dataset.target;
+            const content = document.getElementById(targetId);
+            const toggleIcon = header.querySelector('.toggle-icon');
+
+            // Close all other open sections
+            document.querySelectorAll('.section-content.active').forEach(openContent => {
+                if (openContent.id !== targetId) {
+                    openContent.classList.remove('active');
+                    openContent.previousElementSibling.querySelector('.toggle-icon').classList.remove('rotate-180');
+                }
+            });
+
+            // Toggle the clicked section
+            content.classList.toggle('active');
+            toggleIcon.classList.toggle('rotate-180');
+        });
+    });
+
+    // Event listener for Edit Profile button
+    if (editProfileBtn) {
+        editProfileBtn.addEventListener('click', () => {
+            showMessage('Edit Profile functionality coming soon!', 'info');
+            // In a real app, this would enable fields or navigate to an edit form
+        });
+    }
+
+    // On page load
+    document.addEventListener('DOMContentLoaded', async () => {
+        const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+        if (loggedInUser && loggedInUser.student_id) {
+            // Fetch and populate profile data
+            await fetchStudentProfile(loggedInUser.student_id);
+        } else {
+            console.error('Student ID not found in session storage. Redirecting to login.');
+            showMessage('Please log in to view your profile.', 'error');
+            setTimeout(() => {
+                window.location.href = frontendBaseUrl; // Redirect to login
+            }, 1500);
+        }
+    });
+</script>
+
+</body>
+</html>

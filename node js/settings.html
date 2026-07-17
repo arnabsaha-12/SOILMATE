@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings - SoilMate</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <style>
+        /* Custom Toggle Switch */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #059669;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #059669;
+        }
+        /* .dark { background-color: #0F172A; color: #F3F4F6; } */
+        
+        /* Smooth scroll */
+        html { scroll-behavior: smooth; }
+    </style>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+</head>
+<body class="min-h-screen p-4 md:p-8 pb-24
+             bg-gray-100 dark:bg-slate-900
+             text-gray-800 dark:text-gray-100
+             transition-colors duration-300">
+
+   <div class="max-w-4xl mx-auto">
+
+        
+        <!-- Header -->
+        <div class="flex items-center mb-8 sticky top-0
+            bg-gray-100 dark:bg-slate-900
+            z-10 py-3 backdrop-blur-md">
+
+            <a href="/agriculture" class="bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm mr-4 hover:shadow-md transition text-gray-700 dark:text-white">
+                <i class="fa-solid fa-arrow-left text-xl"></i>
+            </a>
+            <div>
+                <h1 class="text-3xl font-extrabold text-gray-800 dark:text-white" data-key="settings_title">Settings</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400" data-key="settings_desc">Manage alerts & devices</p>
+            </div>
+        </div>
+
+        <!-- Section: FARM ALERTS -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+            <h2 class="text-sm font-bold text-green-600 dark:text-green-400 uppercase tracking-wider mb-4 flex items-center">
+                <i class="fa-solid fa-bell mr-2"></i> <span data-key="smart_alerts">Smart Alerts</span>
+            </h2>
+
+            <!-- SMS Item -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="sms_warnings">SMS Warnings</p>
+                    <p class="text-gray-500 text-sm" data-key="sms_desc">Get text when soil is critical.</p>
+                </div>
+                <div class="relative inline-block w-14 align-middle select-none">
+                    <input type="checkbox" checked id="sms-toggle" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" style="top: -4px; left: -4px;"/>
+                    <label for="sms-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
+
+            <!-- Weather Item -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="weather_radar">Weather Radar</p>
+                    <p class="text-gray-500 text-sm" data-key="weather_desc">Notify before heavy rain/storm.</p>
+                </div>
+                <div class="relative inline-block w-14 align-middle select-none">
+                    <input type="checkbox" checked id="weather-toggle" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" style="top: -4px; left: -4px;"/>
+                    <label for="weather-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: SENSOR CONFIGURATION -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+            <h2 class="text-sm font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider mb-4 flex items-center">
+                <i class="fa-solid fa-wifi mr-2"></i> <span data-key="device_settings">Device Settings</span>
+            </h2>
+
+            <!-- Reading Frequency -->
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="reading_freq">Reading Frequency</p>
+                    <p class="text-gray-500 text-sm" data-key="reading_desc">How often sensors check soil.</p>
+                </div>
+                <select class="bg-gray-100 dark:bg-gray-700 border-none rounded-lg p-2 font-semibold text-gray-700 dark:text-white text-sm">
+                    <option data-key="opt_1hr">Every 1 Hour</option>
+                    <option data-key="opt_4hr">Every 4 Hours</option>
+                    <option data-key="opt_12hr">Every 12 Hours</option>
+                    <option data-key="opt_daily">Once Daily</option>
+                </select>
+            </div>
+
+            <!-- Calibration -->
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="sensor_health">Sensor Health</p>
+                    <p class="text-green-500 text-sm font-semibold"><i class="fa-solid fa-check-circle"></i> <span data-key="online_calibrated">Online & Calibrated</span></p>
+                </div>
+                <button data-key="recalibrate" onclick="alert('Initiating sensor calibration sequence... Please wait 2 minutes.')" class="text-blue-600 dark:text-blue-400 font-bold px-4 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-sm hover:bg-blue-100 dark:hover:bg-blue-900/50 transition">
+                    Recalibrate
+                </button>
+            </div>
+        </div>
+
+        <!-- Section: DATA & REPORTS -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+            <h2 class="text-sm font-bold text-purple-600 dark:text-purple-400 uppercase tracking-wider mb-4 flex items-center">
+                <i class="fa-solid fa-file-contract mr-2"></i> <span data-key="reports_data">Reports & Data</span>
+            </h2>
+
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="download_report">Download Soil Report</p>
+                    <p class="text-gray-500 text-sm" data-key="report_desc">PDF format for bank/insurance.</p>
+                </div>
+                <button onclick="alert('Downloading Soil_Report_Nov2025.pdf...')" class="bg-gray-100 dark:bg-gray-700 p-3 rounded-full text-gray-600 dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600 transition">
+                    <i class="fa-solid fa-download"></i>
+                </button>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="font-bold text-lg dark:text-gray-200" data-key="weekly_summary">Weekly Email Summary</p>
+                    <p class="text-gray-500 text-sm" data-key="summary_desc">Receive weekly analytics.</p>
+                </div>
+                <div class="relative inline-block w-14 align-middle select-none">
+                    <input type="checkbox" checked id="email-toggle" class="toggle-checkbox absolute block w-8 h-8 rounded-full bg-white border-4 appearance-none cursor-pointer transition-all duration-300" style="top: -4px; left: -4px;"/>
+                    <label for="email-toggle" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: APP PREFERENCES -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-6 mb-6">
+            <h2 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4 border-b dark:border-gray-700 pb-2">
+                <i class="fa-solid fa-sliders mr-2"></i> <span data-key="general">General</span>
+            </h2>
+
+            <!-- Units -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-3 text-gray-600 dark:text-white">
+                        <i class="fa-solid fa-ruler-combined"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg dark:text-gray-200" data-key="units">Units</p>
+                        <p class="text-gray-500 text-sm" data-key="units_desc">Acres vs Hectares</p>
+                    </div>
+                </div>
+                <select class="bg-gray-100 dark:bg-gray-700 border-none rounded-lg p-2 font-semibold text-gray-700 dark:text-white text-sm">
+                    <option>Acres / Fahrenheit</option>
+                    <option>Hectares / Celsius</option>
+                </select>
+            </div>
+
+            <!-- Dark Mode -->
+            <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center">
+                    <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-3 text-gray-600 dark:text-white">
+                        <i class="fa-solid fa-moon"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg dark:text-gray-200" data-key="dark_mode">Dark Mode</p>
+                        <p class="text-gray-500 text-sm" data-key="dark_mode_desc">Easier on eyes at night.</p>
+                    </div>
+                </div>
+                <button onclick="toggleTheme()" id="theme-btn" class="text-green-600 font-bold px-4 py-2 bg-green-50 dark:bg-green-900/30 rounded-lg text-sm">
+                    Turn On
+                </button>
+            </div>
+
+            <!-- Language -->
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg mr-3 text-gray-600 dark:text-white">
+                        <i class="fa-solid fa-language"></i>
+                    </div>
+                    <div>
+                        <p class="font-bold text-lg dark:text-gray-200" data-key="language">Language</p>
+                        <p class="text-gray-500 text-sm" data-key="lang_desc">App interface language.</p>
+                    </div>
+                </div>
+                <select id="lang-select" onchange="changeLanguage(this.value)" class="bg-gray-100 dark:bg-gray-700 border-none rounded-lg p-2 font-semibold text-gray-700 dark:text-white text-sm">
+                    <option value="en">English</option>
+                    <option value="hi">Hindi (हिंदी)</option>
+                    <option value="bn">Bengali (বাংলা)</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Help & Support -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <button onclick="alert('Opening video tutorials...')" class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fa-solid fa-circle-play text-2xl text-red-500 mb-2"></i>
+                <p class="font-bold dark:text-white" data-key="tutorials">Tutorials</p>
+            </button>
+            <button onclick="alert('Calling Support: 1800-SOIL-MATE')" class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm text-center hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                <i class="fa-solid fa-headset text-2xl text-blue-500 mb-2"></i>
+                <p class="font-bold dark:text-white" data-key="call_support">Call Support</p>
+            </button>
+        </div>
+
+        <!-- Logout Button -->
+        <button onclick="window.location.href='/'" class="w-full bg-red-100 text-red-600 font-bold py-4 rounded-xl hover:bg-red-200 transition flex items-center justify-center shadow-sm mb-8">
+            <i class="fa-solid fa-right-from-bracket mr-2"></i> <span data-key="logout">Log Out</span>
+        </button>
+        
+        <p class="text-center text-xs text-gray-400 pb-4">SoilMate v2.1.4 (Build 2025)</p>
+
+    </div>
+
+    <script>
+        // --- Translations Dictionary ---
+        const translations = {
+            en: {
+                settings_title: "Settings",
+                settings_desc: "Manage alerts & devices",
+                smart_alerts: "Smart Alerts",
+                sms_warnings: "SMS Warnings",
+                sms_desc: "Get text when soil is critical.",
+                weather_radar: "Weather Radar",
+                weather_desc: "Notify before heavy rain/storm.",
+                device_settings: "Device Settings",
+                reading_freq: "Reading Frequency",
+                reading_desc: "How often sensors check soil.",
+                opt_1hr: "Every 1 Hour",
+                opt_4hr: "Every 4 Hours",
+                opt_12hr: "Every 12 Hours",
+                opt_daily: "Once Daily",
+                sensor_health: "Sensor Health",
+                online_calibrated: "Online & Calibrated",
+                recalibrate: "Recalibrate",
+                reports_data: "Reports & Data",
+                download_report: "Download Soil Report",
+                report_desc: "PDF format for bank/insurance.",
+                weekly_summary: "Weekly Email Summary",
+                summary_desc: "Receive weekly analytics.",
+                general: "General",
+                units: "Units",
+                units_desc: "Acres vs Hectares",
+                dark_mode: "Dark Mode",
+                dark_mode_desc: "Easier on eyes at night.",
+                language: "Language",
+                lang_desc: "App interface language.",
+                tutorials: "Tutorials",
+                call_support: "Call Support",
+                logout: "Log Out",
+                turn_on: "Turn On",
+                turn_off: "Turn Off"
+            },
+            hi: {
+                settings_title: "सेटिंग्स",
+                settings_desc: "अलर्ट और उपकरणों का प्रबंधन करें",
+                smart_alerts: "स्मार्ट अलर्ट",
+                sms_warnings: "एसएमएस चेतावनी",
+                sms_desc: "मिट्टी गंभीर होने पर संदेश प्राप्त करें।",
+                weather_radar: "मौसम रडार",
+                weather_desc: "भारी बारिश/तूफान से पहले सूचित करें।",
+                device_settings: "उपकरण सेटिंग्स",
+                reading_freq: "रीडिंग आवृत्ति",
+                reading_desc: "सेंसर कितनी बार मिट्टी की जांच करते हैं।",
+                opt_1hr: "हर 1 घंटे में",
+                opt_4hr: "हर 4 घंटे में",
+                opt_12hr: "हर 12 घंटे में",
+                opt_daily: "दिन में एक बार",
+                sensor_health: "सेंसर स्वास्थ्य",
+                online_calibrated: "ऑनलाइन और कैलिब्रेटेड",
+                recalibrate: "फिर से जांच करें",
+                reports_data: "रिपोर्ट और डेटा",
+                download_report: "मृदा रिपोर्ट डाउनलोड करें",
+                report_desc: "बैंक/बीमा के लिए पीडीएफ प्रारूप।",
+                weekly_summary: "साप्ताहिक ईमेल सारांश",
+                summary_desc: "साप्ताहिक विश्लेषण प्राप्त करें।",
+                general: "सामान्य",
+                units: "इकाइयां",
+                units_desc: "एकड़ बनाम हेक्टेयर",
+                dark_mode: "डार्क मोड",
+                dark_mode_desc: "रात में आंखों के लिए आसान।",
+                language: "भाषा",
+                lang_desc: "ऐप इंटरफ़ेस भाषा।",
+                tutorials: "ट्यूटोरियल",
+                call_support: "कॉल समर्थन",
+                logout: "लॉग आउट",
+                turn_on: "चालू करें",
+                turn_off: "बंद करें"
+            },
+            bn: {
+                 settings_title: "সেটিংস",
+                settings_desc: "সতর্কতা এবং ডিভাইস পরিচালনা করুন",
+                smart_alerts: "স্মার্ট সতর্কতা",
+                sms_warnings: "এসএমএস সতর্কতা",
+                sms_desc: "মাটি সংকটজনক হলে বার্তা পান।",
+                weather_radar: "আবহাওয়া রাডার",
+                weather_desc: "ভারী বৃষ্টি/ঝড়ের আগে জানান।",
+                device_settings: "ডিভাইস সেটিংস",
+                reading_freq: "পড়ার ফ্রিকোয়েন্সি",
+                reading_desc: "সেন্সর কত ঘন ঘন মাটি পরীক্ষা করে।",
+                opt_1hr: "প্রতি ১ ঘণ্টায়",
+                opt_4hr: "প্রতি ৪ ঘণ্টায়",
+                opt_12hr: "প্রতি ১২ ঘণ্টায়",
+                opt_daily: "দিনে একবার",
+                sensor_health: "সেন্সর স্বাস্থ্য",
+                online_calibrated: "অনলাইন এবং ক্যালিব্রেটেড",
+                recalibrate: "পুনরায় ক্যালিব্রেট করুন",
+                reports_data: "রিপোর্ট এবং ডেটা",
+                download_report: "মাটির রিপোর্ট ডাউনলোড করুন",
+                report_desc: "ব্যাংক/বীমার জন্য পিডিএফ ফরম্যাট।",
+                weekly_summary: "সাপ্তাহিক ইমেল সারাংশ",
+                summary_desc: "সাপ্তাহিক বিশ্লেষণ পান।",
+                general: "সাধারণ",
+                units: "ইউনিট",
+                units_desc: "একর বনাম হেক্টর",
+                dark_mode: "ডার্ক মোড",
+                dark_mode_desc: "রাতে চোখের জন্য সহজ।",
+                language: "ভাষা",
+                lang_desc: "অ্যাপ ইন্টারফেস ভাষা।",
+                tutorials: "টিউটোরিয়াল",
+                call_support: "কল সাপোর্ট",
+                logout: "লগ আউট",
+                turn_on: "চালু করুন",
+                turn_off: "বন্ধ করুন"
+            }
+        };
+
+        function changeLanguage(lang) {
+            // Save to local storage
+            localStorage.setItem('language', lang);
+            document.getElementById('lang-select').value = lang;
+
+            const elements = document.querySelectorAll('[data-key]');
+            elements.forEach(el => {
+                const key = el.getAttribute('data-key');
+                if (translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update theme button specifically since it changes state
+            updateThemeButtonText();
+        }
+
+        // --- Theme Logic ---
+        const themeBtn = document.getElementById('theme-btn');
+        
+        function updateThemeButtonText() {
+            const lang = localStorage.getItem('language') || 'en';
+            const isDark = document.documentElement.classList.contains('dark');
+            const key = isDark ? 'turn_off' : 'turn_on';
+            themeBtn.textContent = translations[lang][key];
+        }
+        
+        function loadThemeAndLang() {
+            // Load Theme
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+            
+            // Load Language
+            const savedLang = localStorage.getItem('language') || 'en';
+            changeLanguage(savedLang);
+        }
+
+        window.toggleTheme = function() {
+            const isDark = document.documentElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeButtonText();
+        }
+
+        loadThemeAndLang();
+        
+        // Simple toggle animation logic for the CSS checkboxes
+        document.querySelectorAll('.toggle-checkbox').forEach(box => {
+            const updateToggle = () => {
+                if(box.checked) {
+                    box.style.left = 'calc(100% - 1.5rem)';
+                } else {
+                    box.style.left = '-4px';
+                }
+            };
+            
+            box.addEventListener('change', updateToggle);
+            updateToggle();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detailed Soil Condition Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+    <style>
+        /* --- Base Theme Variables (Light Mode Default) --- */
+        :root {
+            --bg-body: #F0FFF4;
+            --bg-card: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --color-accent: #059669; /* Emerald 600 */
+            --color-accent-light: #34D399; /* Mint Green */
+            --border-color: #E5E7EB;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Dark Mode Variables --- */
+        .dark {
+            --bg-body: #0F172A; /* Slate 900 */
+            --bg-card: #1F2937; /* Slate 800 */
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --color-accent: #34D399; 
+            --color-accent-light: #059669;
+            --border-color: #374151;
+            --shadow-color: rgba(52, 211, 153, 0.1);
+        }
+
+        /* Apply variables to body and global elements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            transition: background-color 0.5s ease, color 0.5s ease;
+            margin: 0; /* Ensure no overflow */
+        }
+
+        /* Sidebar Persistence Layout */
+        .app-container { 
+            display: flex; 
+            min-height: 100vh; 
+            width: 100%;
+        }
+        
+        .sidebar {
+            width: 256px;
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding-top: 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: background-color 0.5s, border-color 0.5s;
+            z-index: 40;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2.5rem 2rem;
+            max-width: calc(100% - 256px); /* Ensure sidebar doesn't squash content */
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar { width: 220px; }
+            .main-content-area { max-width: calc(100% - 220px); }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .main-content-area { 
+                padding: 1rem;
+                max-width: 100%; 
+                padding-top: 2rem; 
+            }
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+            transition: all 0.5s;
+        }
+
+        .chart-canvas-wrapper {
+            height: 384px;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #user-id-display {
+            word-break: break-all;
+            white-space: normal;
+        }
+
+        /* Back button hover effect */
+        .back-btn:hover svg {
+            transform: translateX(-4px);
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'soilmate': {
+                            '500': 'var(--color-accent)',
+                            '700': 'var(--color-accent-light)',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    
+    <div class="app-container">
+        <aside class="sidebar hidden md:block">
+            <div class="px-6 pb-8">
+                <div class="flex items-center mb-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-soilmate-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11A8 8 0 0 1 12 2a8 8 0 0 1 8 8c0 6.5-8 11-8 11z"/><path d="M12 18v-4M8 14h8"/></svg>
+                    <span class="text-2xl font-extrabold text-soilmate-500 tracking-wide">SoilMate</span>
+                </div>
+
+                <nav class="space-y-3">
+                    <a href="/agriculture" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.7-2.7L7 14.6"/></svg>
+                        Dashboard
+                    </a>
+                    <a href="#" class="flex items-center p-3 rounded-xl bg-soilmate-500/10 text-soilmate-500 font-bold transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6.5A6.5 6.5 0 0 0 5.5 12c0 4.5 6.5 9 6.5 9s6.5-4.5 6.5-9A6.5 6.5 0 0 0 12 6.5z"/></svg>
+                        Soil Condition
+                    </a>
+                    <a href="/crop-recommendation" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19c-2.4 0-4.7-1.4-5.7-3.6-1-2.2-1.3-4.7-.8-7.2.4-2.5 1.5-4.8 3.2-6.6"/></svg>
+                        Crop Recommendation
+                    </a>
+                    <a href="/pest-disease" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A9 9 0 0 0 5 8.5v5.5H2l5 5 5-5H8V9.5z"/></svg>
+                        Pest & Disease AI
+                    </a>
+                    <a href="/my-farms" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.25a2 2 0 0 0 1.66.85h3.34a2 2 0 0 1 1.66.9l.82 1.25a2 2 0 0 0 1.66.85H20a2 2 0 0 1 2 2v2"/></svg>
+                        My Farms
+                    </a>
+                </nav>
+            </div>
+        </aside>
+
+        <main class="main-content-area">
+            <div class="max-w-7xl mx-auto">
+                
+                <header class="flex justify-between items-center mb-10 pb-4 border-b border-soilmate-500/50">
+                    <div class="flex items-center">
+                        <a href="/agriculture" class="back-btn flex items-center mr-6 px-4 py-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:text-soilmate-500 dark:hover:text-soilmate-500 hover:border-soilmate-500 transition-all duration-300 shadow-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 transition-transform duration-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                            <span class="font-bold text-sm">Dashboard</span>
+                        </a>
+                        <h1 class="text-2xl md:text-4xl font-extrabold text-gray-800 dark:text-green-300">Soil Condition AI Report</h1>
+                    </div>
+                    
+
+                    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300">
+                        <svg id="moon-icon" class="w-6 h-6 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                        <svg id="sun-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                    </button>
+                </header>
+
+                <div class="mb-8 p-4 text-xs bg-soilmate-500/10 rounded-lg">
+                    <p class="font-medium text-gray-600 dark:text-gray-300">
+                        User ID: <span id="user-id-display" class="font-mono text-soilmate-500">Initializing...</span>
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    
+                    <div class="lg:col-span-1 space-y-8">
+
+                        <section class="card p-6">
+                            <h2 class="text-xl font-bold text-soilmate-500 mb-4 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s-1-1-1-2 1-2 1-2m5-3-2-2-4 4 2 2 4 4 4-4-2-2m-4 4 4 4"/><path d="M22 21v-7a5 5 0 0 0-5-5H7"/></svg>
+                                Soil & Texture Metadata
+                            </h2>
+                            <div class="space-y-4 text-gray-700 dark:text-gray-200">
+                                <div class="flex justify-between items-center border-b border-dashed pb-2">
+                                    <span class="font-medium">Type:</span>
+                                    <span class="font-semibold" id="report-type">Loamy Silt</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-dashed pb-2">
+                                    <span class="font-medium">Texture Quality:</span>
+                                    <span class="font-semibold text-green-600 dark:text-green-400" id="report-texture">Good</span>
+                                </div>
+                                <div class="flex justify-between items-center border-b border-dashed pb-2">
+                                    <span class="font-medium">Organic Matter:</span>
+                                    <span class="font-bold text-green-600 dark:text-green-400" id="report-organic-matter">3.5% (Optimal)</span>
+                                </div>
+                            </div>
+                        </section>
+                        
+                        <section class="card p-6">
+                            <h2 class="text-xl font-bold text-soilmate-500 mb-4 flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11A8 8 0 0 1 12 2a8 8 0 0 1 8 8c0 6.5-8 11-8 11z"/><path d="M12 18v-4M8 14h8"/></svg>
+                                Current Sensor Data
+                            </h2>
+                            <div class="space-y-4 text-gray-700 dark:text-gray-200">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">Moisture:</span>
+                                    <span class="text-2xl font-extrabold text-blue-500" id="moisture-val">--%</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">Nitrogen (N):</span>
+                                    <span class="text-2xl font-extrabold text-red-500" id="nitrogen-val">-- ppm</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">Potassium (K):</span>
+                                    <span class="text-2xl font-extrabold text-yellow-500" id="potassium-val">-- ppm</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">Phosphorus (P):</span>
+                                    <span class="text-2xl font-extrabold text-green-500" id="phosphorus-val">-- ppm</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-medium">pH Level:</span>
+                                    <span class="text-2xl font-extrabold text-soilmate-500" id="ph-val">--</span>
+                                </div>
+                            </div>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-4 text-right" id="last-update">Last Updated: N/A</p>
+                        </section>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-8">
+                        
+                        <section class="card p-6 chart-container">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Nutrient & Moisture History (Bar View)</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Nutrient and Moisture levels are represented by bars; pH is overlaid as a line graph.</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="multi-line-chart"></canvas>
+                            </div>
+                        </section>
+
+                        <section class="card p-6 chart-container">
+                            <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4">Dedicated pH Trend Analysis</h2>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Monitors stability of soil acidity/alkalinity over time.</p>
+                            <div class="chart-canvas-wrapper">
+                                <canvas id="ph-line-chart"></canvas>
+                            </div>
+                        </section>
+
+                        <div id="nutrient-radar-chart" class="hidden"></div> 
+                    </div>
+                </div>
+
+                <div class="mt-10 text-center">
+                    <button onclick="simulateNewData()" class="px-8 py-4 bg-soilmate-500 text-white font-bold rounded-xl shadow-lg hover:bg-soilmate-700 transition duration-300 transform hover:scale-[1.01]">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 inline mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4m-4 0h18a3 3 0 0 0 3-3v-4m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Generate Simulated Data Point (Real-Time Update)
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, onSnapshot, setLogLevel, setDoc, query, collection, limit, orderBy, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let userId = 'anonymous'; 
+
+        let multiLineChartInstance = null; 
+        let phLineChartInstance = null; 
+        
+        const OptimalRanges = {
+            nitrogen: { min: 80, max: 120, target: 100, maxChart: 160, color: '#16A34A' },
+            potassium: { min: 100, max: 150, target: 125, maxChart: 160, color: '#F59E0B' },
+            phosphorus: { min: 60, max: 90, target: 75, maxChart: 160, color: '#3B82F6' },
+            ph: { min: 6.0, max: 7.0, target: 6.5, maxChart: 9.0, minChart: 5.0, color: '#2563EB' },
+            moisture: { min: 50, max: 80, target: 65, maxChart: 160, color: '#92400E' } 
+        };
+
+        const DefaultData = {
+            moisture: 65.0, nitrogen: 105, potassium: 130, phosphorus: 80, ph: 6.6, timestamp: Date.now()
+        };
+
+        // --- Helper: Get colors based on current theme ---
+        function getThemeColors() {
+            const isDark = document.documentElement.classList.contains('dark');
+            return {
+                text: isDark ? '#F3F4F6' : '#1F2937', // White-ish in dark mode, Dark-ish in light
+                grid: isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.1)',
+                border: isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                phBg: isDark ? '#1F2937' : '#FFFFFF' // Background for pH tags to hide overlap
+            };
+        }
+
+        function getStatusColor(value, type) {
+            const { min, max } = OptimalRanges[type];
+            if (value < min * 0.7 || value > max * 1.3) return 'rgb(239, 68, 68)'; 
+            if (value < min || value > max) return 'rgb(245, 158, 11)'; 
+            return 'rgb(52, 211, 153)'; 
+        }
+        
+        // --- Chart Functions ---
+        
+        function updateMultiLineChart(historyData) {
+            const ctx = document.getElementById('multi-line-chart');
+            const colors = getThemeColors();
+            const isDark = document.documentElement.classList.contains('dark');
+            
+            const labels = historyData.map((d, index) => {
+                const hour = ((index * 2) + 2) % 12;
+                const ampm = (index * 2) < 10 || (index * 2) >= 22 ? 'A' : 'P';
+                return `${hour === 0 ? 12 : hour}${ampm}`;
+            });
+            
+            const multiChartOptimalZonePlugin = {
+                id: 'multiChartOptimalZone',
+                beforeDraw(chart) {
+                    const { ctx, chartArea: { top, bottom, left, right, width }, scales: { x, ph } } = chart;
+                    ctx.save();
+                    if (!ph || !ph.getPixelForValue) return;
+                    const optimalMin = OptimalRanges.ph.min;
+                    const optimalMax = OptimalRanges.ph.max;
+                    const yMin = ph.getPixelForValue(optimalMin);
+                    const yMax = ph.getPixelForValue(optimalMax);
+                    ctx.fillStyle = 'rgba(5, 150, 105, 0.15)'; 
+                    ctx.fillRect(left, yMax, width, yMin - yMax);
+                    ctx.restore();
+                }
+            };
+            
+            const datasets = [
+                { 
+                    label: 'Nitrogen (N) ppm', 
+                    data: historyData.map(d => d.nitrogen), 
+                    backgroundColor: OptimalRanges.nitrogen.color, 
+                    yAxisID: 'ppm_primary', 
+                    type: 'bar' 
+                },
+                { 
+                    label: 'Potassium (K) ppm', 
+                    data: historyData.map(d => d.potassium), 
+                    backgroundColor: OptimalRanges.potassium.color, 
+                    yAxisID: 'ppm_primary', 
+                    type: 'bar' 
+                },
+                { 
+                    label: 'Phosphorus (P) ppm', 
+                    data: historyData.map(d => d.phosphorus), 
+                    backgroundColor: OptimalRanges.phosphorus.color, 
+                    yAxisID: 'ppm_primary', 
+                    type: 'bar' 
+                },
+                { 
+                    label: 'Soil Moisture (%)', 
+                    data: historyData.map(d => d.moisture), 
+                    backgroundColor: OptimalRanges.moisture.color, 
+                    yAxisID: 'ppm_primary', 
+                    type: 'bar' 
+                },
+                { 
+                    label: 'pH Level', 
+                    data: historyData.map(d => d.ph), 
+                    borderColor: OptimalRanges.ph.color, 
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)', 
+                    yAxisID: 'ph', 
+                    type: 'line', 
+                    fill: false, 
+                    tension: 0.3, 
+                    pointRadius: 4,
+                    // FIX: Move pH labels ABOVE the line point to avoid overlap with bars
+                    datalabels: {
+                        color: OptimalRanges.ph.color,
+                        backgroundColor: colors.phBg, // Add background to cover underlying bar text
+                        borderRadius: 4,
+                        anchor: 'end',
+                        align: 'top',
+                        offset: 4,
+                        font: { weight: 'bold' }
+                    }
+                }
+            ];
+
+            if (multiLineChartInstance) {
+                multiLineChartInstance.data.labels = labels;
+                multiLineChartInstance.data.datasets = datasets;
+                // Update dynamic colors
+                multiLineChartInstance.options.scales.x.grid.color = colors.grid;
+                multiLineChartInstance.options.scales.x.borderColor = colors.border;
+                multiLineChartInstance.options.scales.x.ticks.color = colors.text; 
+                multiLineChartInstance.options.scales.ppm_primary.grid.color = colors.grid;
+                multiLineChartInstance.options.scales.ppm_primary.borderColor = colors.border;
+                multiLineChartInstance.options.scales.ppm_primary.ticks.color = colors.text; 
+                multiLineChartInstance.options.scales.ppm_primary.title.color = colors.text; 
+                multiLineChartInstance.options.scales.ph.borderColor = colors.border;
+                multiLineChartInstance.options.scales.ph.ticks.color = colors.text; 
+                multiLineChartInstance.options.scales.ph.title.color = colors.text; 
+                multiLineChartInstance.options.plugins.legend.labels.color = colors.text; 
+                // Update specific pH label background
+                multiLineChartInstance.data.datasets[4].datalabels.backgroundColor = colors.phBg;
+
+                multiLineChartInstance.update();
+                return;
+            }
+
+            Chart.register(multiChartOptimalZonePlugin); 
+
+            multiLineChartInstance = new Chart(ctx, {
+                type: 'bar', 
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    scales: {
+                        x: {
+                            stacked: true, 
+                            title: { display: false, text: 'Time (Last 24h)', color: colors.text },
+                            grid: { color: colors.grid, borderColor: colors.border },
+                            ticks: { color: colors.text }
+                        },
+                        ppm_primary: { 
+                            stacked: true, 
+                            type: 'linear',
+                            position: 'left',
+                            title: { display: true, text: 'PPM / %', color: colors.text },
+                            min: 0,
+                            max: OptimalRanges.nitrogen.maxChart * 4, 
+                            grid: { color: colors.grid, borderColor: colors.border },
+                            ticks: { color: colors.text }
+                        },
+                        ph: { 
+                            type: 'linear',
+                            position: 'right',
+                            title: { display: true, text: 'pH Level', color: colors.text }, 
+                            min: OptimalRanges.ph.minChart,
+                            max: OptimalRanges.ph.maxChart,
+                            grid: { drawOnChartArea: false, color: 'rgba(0, 0, 0, 0)', borderColor: colors.border },
+                            ticks: { color: colors.text }
+                        }
+                    },
+                    plugins: {
+                        // FIX: Global datalabels config for the BARS (White text)
+                        datalabels: {
+                            color: '#FFFFFF', // Force White text for readability on dark bars
+                            font: { weight: 'bold' },
+                            anchor: 'center',
+                            align: 'center',
+                            display: function(context) {
+                                return context.dataset.data[context.dataIndex] > 5; // Hide small values
+                            }
+                        },
+                        legend: { labels: { color: colors.text, usePointStyle: true, boxHeight: 6 } },
+                        tooltip: { 
+                            mode: 'index', intersect: false, 
+                            callbacks: {
+                                title: function(context) { return 'Time: ' + context[0].label; },
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.dataset.type === 'bar') return label + context.formattedValue + (context.dataset.label.includes('Moisture') ? '%' : ' ppm');
+                                    else return label + context.formattedValue;
+                                }
+                            }
+                        },
+                    }
+                }
+            });
+        }
+
+        function updatePhLineChart(historyData) {
+            const ctx = document.getElementById('ph-line-chart');
+            const colors = getThemeColors();
+            
+            const phValues = historyData.map(d => d.ph);
+            const timestamps = historyData.map(d => new Date(d.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+
+            const optimalZonePlugin = {
+                id: 'phOptimalZone',
+                beforeDraw(chart) {
+                    const { ctx, chartArea: { top, bottom, left, right, height, width }, scales: { x, y } } = chart;
+                    ctx.save();
+                    if (!y || !y.getPixelForValue) return;
+                    const optimalMin = OptimalRanges.ph.min;
+                    const optimalMax = OptimalRanges.ph.max;
+                    const yMin = y.getPixelForValue(optimalMin);
+                    const yMax = y.getPixelForValue(optimalMax);
+                    ctx.fillStyle = 'rgba(5, 150, 105, 0.15)'; 
+                    ctx.fillRect(left, yMax, width, yMin - yMax);
+                    ctx.restore();
+                }
+            };
+            
+            if (phLineChartInstance) {
+                phLineChartInstance.data.labels = timestamps;
+                phLineChartInstance.data.datasets[0].data = phValues;
+                // Update colors
+                phLineChartInstance.options.scales.x.grid.color = colors.grid;
+                phLineChartInstance.options.scales.x.borderColor = colors.border;
+                phLineChartInstance.options.scales.x.ticks.color = colors.text;
+                phLineChartInstance.options.scales.x.title.color = colors.text;
+
+                phLineChartInstance.options.scales.y.grid.color = colors.grid;
+                phLineChartInstance.options.scales.y.borderColor = colors.border;
+                phLineChartInstance.options.scales.y.ticks.color = colors.text;
+                phLineChartInstance.options.scales.y.title.color = colors.text;
+                // Update datalabels color if plugin active
+                if(phLineChartInstance.options.plugins.datalabels) {
+                     phLineChartInstance.options.plugins.datalabels.color = colors.text;
+                }
+                
+                phLineChartInstance.update();
+                return;
+            }
+
+            Chart.register(optimalZonePlugin);
+
+            phLineChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps,
+                    datasets: [{
+                        label: 'pH Level',
+                        data: phValues,
+                        borderColor: OptimalRanges.ph.color,
+                        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                        tension: 0.3,
+                        pointRadius: 5,
+                        pointBackgroundColor: OptimalRanges.ph.color,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Time', color: colors.text },
+                            grid: { color: colors.grid, borderColor: colors.border },
+                            ticks: { color: colors.text }
+                        },
+                        y: {
+                            min: OptimalRanges.ph.minChart,
+                            max: OptimalRanges.ph.maxChart,
+                            title: { display: true, text: 'pH Value', color: colors.text },
+                            grid: { color: colors.grid, borderColor: colors.border },
+                            ticks: { color: colors.text },
+                            afterBuildTicks: (axis) => {
+                                axis.ticks.push({ value: OptimalRanges.ph.min, label: `Min pH (${OptimalRanges.ph.min})` });
+                                axis.ticks.push({ value: OptimalRanges.ph.max, label: `Max pH (${OptimalRanges.ph.max})` });
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { mode: 'index', intersect: false },
+                        // Ensure readable text for single line chart
+                        datalabels: {
+                            color: colors.text,
+                            font: { weight: 'bold' },
+                            align: 'top',
+                            anchor: 'end'
+                        }
+                    }
+                }
+            });
+        }
+
+        // --- Data Fetching and UI Update ---
+        
+        function updateUI(data) {
+            if (!data) return;
+
+            document.getElementById('moisture-val').textContent = `${Math.round(data.moisture)}%`;
+            document.getElementById('moisture-val').style.color = getStatusColor(data.moisture, 'moisture');
+            document.getElementById('nitrogen-val').textContent = `${Math.round(data.nitrogen)} ppm`;
+            document.getElementById('nitrogen-val').style.color = getStatusColor(data.nitrogen, 'nitrogen');
+            document.getElementById('potassium-val').textContent = `${Math.round(data.potassium)} ppm`;
+            document.getElementById('potassium-val').style.color = getStatusColor(data.potassium, 'potassium');
+            document.getElementById('phosphorus-val').textContent = `${Math.round(data.phosphorus)} ppm`;
+            document.getElementById('phosphorus-val').style.color = getStatusColor(data.phosphorus, 'phosphorus');
+            document.getElementById('ph-val').textContent = data.ph.toFixed(2);
+            document.getElementById('ph-val').style.color = getStatusColor(data.ph, 'ph');
+            document.getElementById('last-update').textContent = `Last Updated: ${new Date(data.timestamp).toLocaleTimeString()}`;
+        }
+        
+        async function listenForHistoricalData() {
+            if (!db || !userId) return;
+
+            const collectionPath = `artifacts/${appId}/users/${userId}/soil_readings_history`;
+            const q = query(collection(db, collectionPath), orderBy("timestamp", "desc"), limit(7));
+
+            onSnapshot(q, (snapshot) => {
+                const historyData = [];
+                snapshot.forEach((doc) => { historyData.unshift(doc.data()); });
+                
+                if (historyData.length === 0) {
+                     const defaultHistory = [
+                        {...DefaultData, timestamp: Date.now() - 500000, ph: 6.8, nitrogen: 140, potassium: 110, moisture: 55},
+                        {...DefaultData, timestamp: Date.now() - 250000, ph: 6.5, nitrogen: 150, potassium: 120, moisture: 60},
+                        {...DefaultData, timestamp: Date.now(), ph: 6.6, nitrogen: 145, potassium: 115, moisture: 65}
+                    ];
+                     updateMultiLineChart(defaultHistory);
+                     updatePhLineChart(defaultHistory);
+                     updateUI(DefaultData);
+                     return; 
+                }
+
+                updateMultiLineChart(historyData);
+                updatePhLineChart(historyData);
+                updateUI(historyData[historyData.length - 1]);
+                
+            }, (error) => {
+                console.error("Firestore historical listener error:", error);
+            });
+        }
+        
+        Chart.register(ChartDataLabels);
+
+        async function initializeFirebase() {
+            try {
+                if (Object.keys(firebaseConfig).length === 0) {
+                    userId = 'offline-demo-user';
+                    document.getElementById('user-id-display').textContent = userId + ' (OFFLINE DEMO)';
+                    const defaultHistory = [
+                        {...DefaultData, timestamp: Date.now() - 500000, ph: 6.8, nitrogen: 140, potassium: 110, moisture: 55},
+                        {...DefaultData, timestamp: Date.now() - 250000, ph: 6.5, nitrogen: 150, potassium: 120, moisture: 60},
+                        {...DefaultData, timestamp: Date.now(), ph: 6.6, nitrogen: 145, potassium: 115, moisture: 65}
+                    ];
+                    updateMultiLineChart(defaultHistory); 
+                    updatePhLineChart(defaultHistory);
+                    updateUI(DefaultData);
+                    return;
+                }
+                
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                setLogLevel('Debug');
+
+                if (initialAuthToken) { await signInWithCustomToken(auth, initialAuthToken); } 
+                else { await signInAnonymously(auth); }
+
+                userId = auth.currentUser?.uid || crypto.randomUUID();
+                document.getElementById('user-id-display').textContent = userId;
+                listenForHistoricalData();
+
+            } catch (error) {
+                console.error("Firebase initialization or sign-in failed:", error);
+                userId = 'auth-failed-demo';
+                document.getElementById('user-id-display').textContent = userId + ' (AUTH FAILED DEMO)';
+                const defaultHistory = [
+                    {...DefaultData, timestamp: Date.now() - 500000, ph: 6.8, nitrogen: 140, potassium: 110, moisture: 55},
+                    {...DefaultData, timestamp: Date.now() - 250000, ph: 6.5, nitrogen: 150, potassium: 120, moisture: 60},
+                    {...DefaultData, timestamp: Date.now(), ph: 6.6, nitrogen: 145, potassium: 115, moisture: 65}
+                ];
+                updateMultiLineChart(defaultHistory); 
+                updatePhLineChart(defaultHistory);
+                updateUI(DefaultData);
+            }
+        }
+
+        window.simulateNewData = async function() {
+            const newDemoData = {
+                moisture: parseFloat(((Math.random() * 50) + 40).toFixed(2)), 
+                nitrogen: Math.round(Math.random() * 180) + 10, 
+                potassium: Math.round(Math.random() * 200) + 20, 
+                phosphorus: Math.round(Math.random() * 100) + 10, 
+                ph: parseFloat(((Math.random() * 3) + 5.5).toFixed(2)), 
+                timestamp: Date.now()
+            };
+
+            if (!db || userId.includes('demo')) { 
+                const instances = [multiLineChartInstance, phLineChartInstance];
+                instances.forEach(instance => {
+                    if (!instance) return;
+                    const NData = instance.data.datasets.find(d => d.label.includes('Nitrogen'))?.data;
+                    const KData = instance.data.datasets.find(d => d.label.includes('Potassium'))?.data;
+                    const PData = instance.data.datasets.find(d => d.label.includes('Phosphorus'))?.data;
+                    const pHData = instance.data.datasets.find(d => d.label.includes('pH Level'))?.data;
+                    const MoistureData = instance.data.datasets.find(d => d.label.includes('Moisture'))?.data;
+                    const labels = instance.data.labels;
+                    labels.push(new Date(newDemoData.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+
+                    if (NData) NData.push(newDemoData.nitrogen);
+                    if (KData) KData.push(newDemoData.potassium);
+                    if (PData) PData.push(newDemoData.phosphorus);
+                    if (pHData) pHData.push(newDemoData.ph);
+                    if (MoistureData) MoistureData.push(newDemoData.moisture);
+
+                    if (labels.length > 7) {
+                        labels.shift();
+                        if (NData) NData.shift();
+                        if (KData) KData.shift();
+                        if (PData) PData.shift();
+                        if (pHData) pHData.shift();
+                        if (MoistureData) MoistureData.shift();
+                    }
+                    instance.update();
+                });
+                updateUI(newDemoData);
+            } else {
+                const historyCollection = collection(db, `artifacts/${appId}/users/${userId}/soil_readings_history`);
+                try { await addDoc(historyCollection, newDemoData); } catch (error) { console.error(error); }
+            }
+
+            const button = document.querySelector('button[onclick="simulateNewData()"]');
+            const originalText = button.textContent;
+            button.textContent = 'Data Sent! Charts Updating...';
+            button.disabled = true;
+            setTimeout(() => { button.textContent = originalText; button.disabled = false; }, 1500);
+        };
+
+        // --- Theme Toggle Logic ---
+        const htmlElement = document.documentElement;
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        function updateIcon(isDark) {
+            sunIcon.classList.toggle('hidden', isDark);
+            moonIcon.classList.toggle('hidden', !isDark);
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (savedTheme === 'dark') {
+                htmlElement.classList.add('dark');
+                updateIcon(true);
+            } else {
+                updateIcon(false);
+            }
+        }
+
+        window.toggleTheme = function() {
+            const isDark = htmlElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateIcon(isDark);
+            
+            // FORCE CHART UPDATE FOR COLORS
+            if (multiLineChartInstance) {
+                const currentData = multiLineChartInstance.data.datasets[0].data.map((val, index) => ({
+                     nitrogen: multiLineChartInstance.data.datasets[0].data[index],
+                     potassium: multiLineChartInstance.data.datasets[1].data[index],
+                     phosphorus: multiLineChartInstance.data.datasets[2].data[index],
+                     moisture: multiLineChartInstance.data.datasets[3].data[index],
+                     ph: multiLineChartInstance.data.datasets[4].data[index],
+                     timestamp: Date.now() 
+                }));
+                updateMultiLineChart(currentData);
+            }
+            
+            if (phLineChartInstance) {
+               const currentPhData = phLineChartInstance.data.datasets[0].data.map((val, index) => ({
+                   ph: val,
+                   timestamp: Date.now() 
+               }));
+               updatePhLineChart(currentPhData);
+            }
+        };
+        
+        loadTheme();
+        initializeFirebase();
+
+     const BLYNK_TOKEN = "nfglh3NwoG505OpHYtUUVJGq2DPPeonY";
+let localHistory = []; // History store karne ke liye
+
+const defaultData = {
+    n: 100, // Matched to Optimal target
+    p: 75,
+    k: 125
+};
+
+async function fetchRealTimeSoilData() {
+    try {
+        const [moistureRes, phRes] = await Promise.all([
+            fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V1`),
+            fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V2`)
+        ]);
+
+        const moistureVal = parseFloat(await moistureRes.text()) || 0;
+        const phVal = parseFloat(await phRes.text()) || 7.0;
+
+        // 1. UI Update (Top Cards)
+        // Note: Make sure these IDs match your HTML exactly
+        if(document.getElementById('current-moisture')) document.getElementById('current-moisture').textContent = moistureVal + "%";
+        if(document.getElementById('current-ph')) document.getElementById('current-ph').textContent = phVal.toFixed(2);
+        if(document.getElementById('current-n')) document.getElementById('current-n').textContent = defaultData.n;
+        if(document.getElementById('current-p')) document.getElementById('current-p').textContent = defaultData.p;
+        if(document.getElementById('current-k')) document.getElementById('current-k').textContent = defaultData.k;
+
+        // Also update the bottom detail cards if they have different IDs
+        if(document.getElementById('moisture-val')) document.getElementById('moisture-val').textContent = moistureVal + "%";
+        if(document.getElementById('ph-val')) document.getElementById('ph-val').textContent = phVal.toFixed(2);
+
+        // 2. Maintain History for Charts
+        const newData = {
+            nitrogen: defaultData.n,
+            phosphorus: defaultData.p,
+            potassium: defaultData.k,
+            moisture: moistureVal,
+            ph: phVal,
+            timestamp: Date.now()
+        };
+
+        localHistory.push(newData);
+        if (localHistory.length > 7) localHistory.shift(); // Max 7 points dikhao
+
+        // 3. Update All Charts
+        updateMultiLineChart(localHistory);
+        updatePhLineChart(localHistory);
+        
+        // updateUI function call for colors
+        updateUI(newData);
+
+        console.log("Real-time Sync:", { moisture: moistureVal, ph: phVal });
+
+    } catch (error) {
+        console.error("Blynk Sync Error:", error);
+    }
+}
+
+// 5 second interval is perfect
+setInterval(fetchRealTimeSoilData, 5000);
+fetchRealTimeSoilData();
+    </script>
+</body>
+</html>

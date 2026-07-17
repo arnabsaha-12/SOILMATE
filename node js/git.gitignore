@@ -1,0 +1,12 @@
+# Dependency directories
+node_modules/
+
+# Local environment files
+.env
+
+# Editor settings
+.vscode/
+
+# Python/ML cache files (if any)
+__pycache__/
+*.pyc

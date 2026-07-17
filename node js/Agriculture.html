@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoilMate Field Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        /* --- Base Theme Variables (Light Mode Default) --- */
+        :root {
+            --bg-body: #F0FFF4;
+            --bg-card: #FFFFFF;
+            --text-primary: #1F2937;
+            --text-secondary: #6B7280;
+            --color-accent: #059669; /* Emerald 600 */
+            --color-accent-light: #34D399; /* Mint Green */
+            --border-color: #E5E7EB;
+            --shadow-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* --- Dark Mode Variables --- */
+        .dark {
+            --bg-body: #0F172A; /* Slate 900 */
+            --bg-card: #1F2937; /* Slate 800 */
+            --text-primary: #F3F4F6;
+            --text-secondary: #9CA3AF;
+            --color-accent: #34D399; /* Mint Green */
+            --color-accent-light: #059669;
+            --border-color: #374151;
+            --shadow-color: rgba(52, 211, 153, 0.1); /* Green glow for dark mode */
+        }
+
+        /* Apply variables to body and global elements */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            transition: background-color 0.5s ease, color 0.5s ease;
+        }
+
+        /* Main app layout with fixed sidebar */
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 256px; /* 64 Tailwind unit */
+            background-color: var(--bg-card);
+            border-right: 1px solid var(--border-color);
+            padding-top: 1rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            flex-shrink: 0;
+            transition: background-color 0.5s, border-color 0.5s;
+        }
+
+        .main-content-area {
+            flex-grow: 1;
+            padding: 2.5rem 1rem;
+            /* Adjust padding for mobile */
+            padding-top: 4rem; 
+        }
+
+        /* Mobile layout adjustment */
+        /*@media (max-width: 768px) {
+            .sidebar {
+                display: none; 
+            }
+            .main-content-area {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }*/
+        
+        .card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 15px -3px var(--shadow-color);
+            transition: transform 0.3s, box-shadow 0.3s, background-color 0.5s, border-color 0.5s;
+            cursor: pointer;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 30px -5px var(--shadow-color);
+            border-color: var(--color-accent);
+        }
+
+        /* Progress Bar Styles */
+        .progress-bar-container {
+            height: 8px;
+            background-color: var(--border-color);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            transition: width 0.8s ease-in-out;
+            /* Subtle animation to show "live" data flow */
+            animation: pulse-shadow 1.2s infinite alternate;
+        }
+        @keyframes pulse-shadow {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
+        }
+
+        /* Accent Button Styling */
+        .accent-button {
+            background-color: var(--color-accent);
+            color: white;
+            font-weight: bold;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px var(--shadow-color);
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        .accent-button:hover {
+            background-color: var(--color-accent-light);
+            transform: scale(1.02);
+        }
+
+        /* Recommendation Alert Glow */
+        .alert-card {
+            border-left: 8px solid;
+            animation: alert-glow 1.5s infinite alternate;
+        }
+        .dark .alert-card {
+            background-color: #374151; /* Slightly lighter dark card */
+        }
+        @keyframes alert-glow {
+            from { box-shadow: 0 0 10px 0 var(--color-accent); }
+            to { box-shadow: 0 0 15px 5px rgba(255, 193, 7, 0.4); } /* Yellow glow */
+        }
+
+        /* Profile Dropdown Styling */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            z-index: 50;
+        }
+
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'soilmate': {
+                            '500': 'var(--color-accent)',
+                            '700': 'var(--color-accent-light)',
+                        },
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen">
+
+    <div id="overlay"
+     onclick="toggleSidebar()"
+     class="fixed inset-0 bg-black/40 hidden z-30 md:hidden"></div>
+
+
+    <div class="app-container">
+        <div id="sidebar"
+ class="sidebar fixed top-0 left-0 h-screen w-64
+        transform -translate-x-full
+        transition-transform duration-300 z-40 bg-white dark:bg-gray-800">
+
+            <div class="px-6 pb-8">
+                <div class="flex items-center mb-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-soilmate-500 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11A8 8 0 0 1 12 2a8 8 0 0 1 8 8c0 6.5-8 11-8 11z"/><path d="M12 18v-4M8 14h8"/></svg>
+                    <span class="text-2xl font-extrabold text-soilmate-500 tracking-wide">SoilMate</span>
+                </div>
+
+                <nav class="space-y-3">
+                    <a href="#" class="flex items-center p-3 rounded-xl bg-soilmate-500/10 text-soilmate-500 font-bold transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18.7 8l-5.1 5.2-2.7-2.7L7 14.6"/></svg>
+                        Dashboard
+                    </a>
+                    <a href="/df" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6.5A6.5 6.5 0 0 0 5.5 12c0 4.5 6.5 9 6.5 9s6.5-4.5 6.5-9A6.5 6.5 0 0 0 12 6.5z"/></svg>
+                        Soil Condition
+                    </a>
+                    <a href="/crop-recommendation" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19c-2.4 0-4.7-1.4-5.7-3.6-1-2.2-1.3-4.7-.8-7.2.4-2.5 1.5-4.8 3.2-6.6"/></svg>
+                        Crop Recommendation
+                    </a>
+                    <a href="/pest-disease" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A9 9 0 0 0 5 8.5v5.5H2l5 5 5-5H8V9.5z"/></svg>
+                        Pest & Disease AI
+                    </a>
+                    <a href="/my-farms" class="flex items-center p-3 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-soilmate-500/10 hover:text-soilmate-500 transition duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20H4a2 2 0 0 1-2-2V5c0-1.1.9-2 2-2h3.93a2 2 0 0 1 1.66.9l.82 1.25a2 2 0 0 0 1.66.85h3.34a2 2 0 0 1 1.66.9l.82 1.25a2 2 0 0 0 1.66.85H20a2 2 0 0 1 2 2v2"/></svg>
+                        My Farms
+                    </a>
+                </nav>
+            </div>
+            
+            <div class="absolute bottom-0 w-full p-4 border-t border-gray-200 dark:border-gray-700">
+                <div class="flex items-center p-2 rounded-xl bg-gray-100 dark:bg-gray-700">
+                    <img src="https://placehold.co/40x40/059669/ffffff?text=F" class="w-10 h-10 rounded-full mr-3 border-2 border-soilmate-500" alt="Farmer Profile">
+                    <div>
+                        <p class="font-semibold text-gray-800 dark:text-white">Subhajit Bhattacharjee</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">subhajit215@gmail.com</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content-area max-w-7xl mx-auto">
+            <div class="flex justify-between items-center mb-8">
+                <!-- ☰ Sidebar Toggle Button (ADD HERE) -->
+    <button onclick="toggleSidebar()"
+    class="mr-4 p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700">
+    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7"
+        fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+</button>
+                <h1 class="text-4xl font-extrabold text-gray-800 dark:text-green-300 transition duration-500">Field Command Center</h1>
+                
+                <div class="flex items-center">
+                    
+                    <button id="theme-toggle" onclick="toggleTheme()" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 mr-4">
+                        <svg id="sun-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2m16 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+                        <svg id="moon-icon" class="w-6 h-6 hidden" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
+                
+                    <div class="relative inline-block text-left z-30">
+                        <button id="profile-button" onclick="toggleDropdown()" class="flex items-center p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-300 focus:outline-none">
+                            <img src="https://placehold.co/40x40/059669/ffffff?text=A" class="w-10 h-10 rounded-full mr-2 border-2 border-soilmate-500" alt="User Avatar">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 ml-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+                        </button>
+                        
+                        <div id="profile-dropdown" class="dropdown-menu hidden origin-top-right bg-white dark:bg-gray-800 rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 w-48 mt-2 transition duration-300 ease-out transform scale-95 opacity-0">
+                            <div class="py-1">
+                                <a href="/Profile" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                    My Account
+                                </a>
+                                <a href="/settings" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4-8-10V5l8-3 8 3v7c0 6-8 10-8 10z"/><path d="M12 10l-4 4 4 4"/></svg>
+                                    Settings
+                                </a>
+                                <a href="/" class="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 10h-1a3 3 0 0 0-3 3v2a3 3 0 0 0-3 3h1"/><path d="M16 16.5V13.5"/><path d="M10 16.5V13.5"/><path d="M10 10h.01"/><path d="M16 10h.01"/><path d="M12 2v20"/><path d="M22 13h-2M4 13h2"/></svg>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+            <section id="alert-section" class="card p-6 mb-10 alert-card" style="border-left-color: #FBBF24;">
+                <h2 class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mb-3 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-yellow-500 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Prescriptive Intelligence (Action Required)
+                </h2>
+                <div id="recommendation-output" class="text-gray-800 dark:text-gray-200 font-medium text-xl transition duration-500">
+                    System standby. All metrics stable.
+                </div>
+            </section>
+
+            <h2 class="text-2xl font-semibold text-gray-700 dark:text-gray-300 mb-4 transition duration-500">Real-Time Soil Diagnostics</h2>
+            <section id="metrics-container" class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-10">
+                <div class="card p-5 text-center transition duration-500 hover:ring-2 ring-blue-500">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11A8 8 0 0 1 12 2a8 8 0 0 1 8 8c0 6.5-8 11-8 11z"/><path d="M12 22s0-4 0-8"/></svg>
+                        Soil Moisture
+                    </p>
+                    <div class="flex justify-center items-center my-2">
+                        <span class="text-5xl font-extrabold text-blue-600 dark:text-blue-400" id="moisture-value">--</span>
+                        <span class="ml-1 text-base text-gray-500 dark:text-gray-400">%</span>
+                    </div>
+                    <div class="progress-bar-container w-full">
+                        <div class="progress-bar-fill bg-blue-500" id="moisture-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold" id="moisture-status">Awaiting Data</p>
+                </div>
+
+                <div class="card p-5 text-center transition duration-500 hover:ring-2 ring-red-500">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l-5 5h10l-5-5z"/><path d="M12 22v-4"/><path d="M12 14v-4"/></svg>
+                        Nitrogen (N)
+                    </p>
+                    <div class="flex justify-center items-center my-2">
+                        <span class="text-5xl font-extrabold text-red-600 dark:text-red-400" id="nitrogen-value">--</span>
+                        <span class="ml-1 text-base text-gray-500 dark:text-gray-400">ppm</span>
+                    </div>
+                    <div class="progress-bar-container w-full">
+                        <div class="progress-bar-fill bg-red-500" id="nitrogen-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold" id="nitrogen-status">Awaiting Data</p>
+                </div>
+
+                <div class="card p-5 text-center transition duration-500 hover:ring-2 ring-yellow-500">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1 text-yellow-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4-8-11c0-4.42 3.58-8 8-8s8 3.58 8 8c0 7-8 11-8 11z"/><path d="M12 12s-2 3-2 5"/></svg>
+                        Potassium (K)
+                    </p>
+                    <div class="flex justify-center items-center my-2">
+                        <span class="text-5xl font-extrabold text-yellow-700 dark:text-yellow-400" id="potassium-value">--</span>
+                        <span class="ml-1 text-base text-gray-500 dark:text-gray-400">ppm</span>
+                    </div>
+                    <div class="progress-bar-container w-full">
+                        <div class="progress-bar-fill bg-yellow-500" id="potassium-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold" id="potassium-status">Awaiting Data</p>
+                </div>
+
+                <div class="card p-5 text-center transition duration-500 hover:ring-2 ring-soilmate-500">
+                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-1 text-soilmate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6.5A6.5 6.5 0 0 0 5.5 12c0 4.5 6.5 9 6.5 9s6.5-4.5 6.5-9A6.5 6.5 0 0 0 12 6.5z"/></svg>
+                        pH Level
+                    </p>
+                    <div class="flex justify-center items-center my-2">
+                        <span class="text-5xl font-extrabold text-soilmate-500" id="ph-value">--</span>
+                    </div>
+                    <div class="progress-bar-container w-full">
+                        <div class="progress-bar-fill bg-soilmate-500" id="ph-bar" style="width: 0%;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-2 font-semibold" id="ph-status">Awaiting Data</p>
+                </div>
+            </section>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <section class="card p-6">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-soilmate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="12" rx="2" ry="2"/><path d="M12 10v4m-2-2h4"/></svg>
+                        IoT Connection Status
+                    </h2>
+                    <div class="space-y-3 text-gray-700 dark:text-gray-300">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">Device ID:</span>
+                            <span class="font-mono text-soilmate-500" id="device-id-summary">SM-001</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">Battery:</span>
+                            <span class="font-bold text-green-500" id="battery-status-summary">85%</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">Signal:</span>
+                            <span class="font-bold text-green-500" id="signal-status-summary">Excellent</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="font-medium">Last Data Ping:</span>
+                            <span class="font-mono text-gray-600 dark:text-gray-300" id="last-ping-summary">Just Now</span>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="card p-6">
+                    <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-2 text-soilmate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 19c-2.4 0-4.7-1.4-5.7-3.6-1-2.2-1.3-4.7-.8-7.2.4-2.5 1.5-4.8 3.2-6.6"/></svg>
+                        Intelligent Crop Rotation
+                    </h2>
+                    <p class="text-lg text-gray-700 dark:text-gray-200 transition duration-500">
+                        The **Next Optimized Crop** is:
+                        <span class="text-3xl font-extrabold text-soilmate-500 ml-2 animate-pulse" id="best-crop">Analyzing...</span>
+                    </p>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                        *Recommendation prevents monocropping, supports nutrient replenishment, and maximizes next-cycle yield.*
+                    </p>
+                  <button onclick="generatePDFReport()" class="mt-6 px-6 py-3 bg-emerald-600 text-white font-bold rounded-lg hover:scale-[1.02] transition-all shadow-lg w-full flex items-center justify-center">
+    <i class="fa-solid fa-file-pdf mr-2"></i> 
+    Force Manual Sync & Download Soil Report
+</button>
+                </section>
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <footer class="bg-white/90 dark:bg-gray-800/90 py-6 text-center text-gray-500 dark:text-gray-400 text-sm border-t border-soilmate-500/30 transition duration-500">
+        &copy; 2025 SoilMate. Cultivating the Future Sustainably.
+    </footer>
+
+
+    <script>
+        // --- YOUR BLYNK CONFIG ---
+        const BLYNK_TOKEN = "nfglh3NwoG505OpHYtUUVJGq2DPPeonY";
+        // Sidebar
+        function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const overlay = document.getElementById("overlay");
+
+    sidebar.classList.toggle("-translate-x-full");
+    overlay.classList.toggle("hidden");
+}
+
+        // --- Theme Toggle Logic ---
+        const htmlElement = document.documentElement;
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const profileDropdown = document.getElementById('profile-dropdown');
+
+        function updateIcon(isDark) {
+            if (isDark) {
+                sunIcon.classList.add('hidden');
+                moonIcon.classList.remove('hidden');
+            } else {
+                sunIcon.classList.remove('hidden');
+                moonIcon.classList.add('hidden');
+            }
+        }
+
+        function loadTheme() {
+            const savedTheme = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            if (savedTheme === 'dark') {
+                htmlElement.classList.add('dark');
+                updateIcon(true);
+            } else {
+                updateIcon(false);
+            }
+        }
+
+        window.toggleTheme = function() {
+            const isDark = htmlElement.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateIcon(isDark);
+        };
+        
+        loadTheme();
+
+        window.toggleDropdown = function() {
+            profileDropdown.classList.toggle('hidden');
+            profileDropdown.classList.toggle('scale-95');
+            profileDropdown.classList.toggle('opacity-0');
+        };
+
+        // --- Live Data Integration ---
+
+        async function fetchLiveBlynkData() {
+            try {
+                // 1. Fetch V1 (Moisture)
+                const resMois = await fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V1`);
+                const moistureValue = await resMois.text();
+
+                // 2. Fetch V2 (pH Level) - NAYA ADDED
+                const resPH = await fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V2`);
+                const phValueRaw = await resPH.text();
+
+                if (moistureValue !== undefined && phValueRaw !== undefined) {
+                    const mValue = Math.round(parseFloat(moistureValue));
+                    const pValue = parseFloat(phValueRaw).toFixed(1); // pH ko 1 decimal tak rakhenge (e.g. 7.2)
+                    
+                    const data = {
+                        moisture: mValue,
+                        nitrogen: 45, // Placeholder
+                        potassium: 35, // Placeholder
+                        ph: pValue,    // Ab ye real data hai!
+                        timestamp: Date.now()
+                    };
+
+                    updateUI(data);
+                }
+            } catch (error) {
+                console.error("Blynk connection error:", error);
+                document.getElementById('moisture-status').textContent = "Sync Failed";
+                document.getElementById('ph-status').textContent = "Sync Failed";
+            }
+        }
+
+        function getStatusAndColor(value, type) {
+            let status = 'Optimal';
+            let colorClass = 'bg-green-500';
+            let alertColor = '#059669';
+
+            if (type === 'moisture') {
+                if (value < 30) { status = 'CRITICAL (DRY)'; colorClass = 'bg-red-500'; alertColor = '#EF4444'; }
+                else if (value < 50) { status = 'Warning (Dry)'; colorClass = 'bg-yellow-500'; alertColor = '#F59E0B'; }
+                else if (value > 80) { status = 'Excess (Wet)'; colorClass = 'bg-blue-500'; alertColor = '#3B82F6'; }
+            }
+            return { status, colorClass, alertColor };
+        }
+
+     function updateUI(data) {
+    const moisture = data.moisture;
+    const { status, colorClass, alertColor } = getStatusAndColor(moisture, 'moisture');
+
+    // --- 1. Moisture Update (Existing) ---
+    document.getElementById('moisture-value').textContent = moisture;
+    document.getElementById('moisture-status').textContent = status;
+    const bar = document.getElementById('moisture-bar');
+    bar.style.width = moisture + "%";
+    bar.className = `progress-bar-fill ${colorClass}`;
+
+    // --- 2. pH Level Update (Real-time Logic) ---
+    const ph = parseFloat(data.ph); // Arduino se aaya hua real pH
+    let phStatus = "Neutral";
+    let phColor = "text-soilmate-500";
+
+    // pH Status Logic
+    if (ph < 6.0) { 
+        phStatus = "Acidic"; 
+        phColor = "text-red-500"; 
+    } else if (ph > 8.0) { 
+        phStatus = "Alkaline"; 
+        phColor = "text-blue-500"; 
+    } else { 
+        phStatus = "Optimal"; 
+        phColor = "text-green-500"; 
+    }
+
+    document.getElementById('ph-value').textContent = data.ph;
+    document.getElementById('ph-status').textContent = phStatus;
+    document.getElementById('ph-status').className = `text-xs mt-2 font-semibold ${phColor}`;
+    
+    // pH Bar Update (0-14 scale ko percentage mein badalna)
+    const phPercent = (ph / 14) * 100;
+    document.getElementById('ph-bar').style.width = phPercent + "%";
+
+
+    // --- 3. Recommendation Text Update ---
+    const recBox = document.getElementById('recommendation-output');
+    const alertBox = document.getElementById('alert-section');
+    
+    if (moisture < 30) {
+        recBox.innerHTML = `<span class="text-red-600 font-extrabold">IMMEDIATE IRRIGATION REQUIRED!</span> Moisture is critically low at ${moisture}%.`;
+        alertBox.style.borderLeftColor = "#EF4444";
+    } else if (moisture > 80) {
+        recBox.innerHTML = `<span class="text-blue-600 font-extrabold">EXCESSIVE WATER DETECTED.</span> Check drainage systems.`;
+        alertBox.style.borderLeftColor = "#3B82F6";
+    } else {
+        recBox.innerHTML = `<span class="text-soilmate-500 font-extrabold">SYSTEM OPTIMAL.</span> Soil moisture and pH are in the healthy range.`;
+        alertBox.style.borderLeftColor = "#059669";
+    }
+
+    // --- 4. Other Fields ---
+    document.getElementById('nitrogen-value').textContent = data.nitrogen; // Placeholder
+    document.getElementById('potassium-value').textContent = data.potassium; // Placeholder
+    document.getElementById('nitrogen-bar').style.width = "45%";
+    document.getElementById('potassium-bar').style.width = "35%";
+    
+    document.getElementById('last-ping-summary').textContent = new Date().toLocaleTimeString();
+    document.getElementById('best-crop').textContent = (moisture > 70) ? "Rice (Paddy)" : "Corn (Maize)";
+}
+
+        // Initialize and poll every 2 seconds
+        loadTheme();
+        fetchLiveBlynkData();
+        setInterval(fetchLiveBlynkData, 2000);
+
+       const { jsPDF } = window.jspdf;
+
+    async function generatePDFReport() {
+        const doc = new jsPDF();
+        const BLYNK_TOKEN = "nfglh3NwoG505OpHYtUUVJGq2DPPeonY";
+
+        try {
+            // --- 2. FETCH REAL-TIME DATA ---
+            const [moistureRes, phRes] = await Promise.all([
+                fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V1`),
+                fetch(`https://blynk.cloud/external/api/get?token=${BLYNK_TOKEN}&V2`)
+            ]);
+
+            const moisture = await moistureRes.text();
+            const ph = parseFloat(await phRes.text()).toFixed(2);
+            const state = document.getElementById('user-state')?.value || "West Bengal";
+
+            // --- 3. GET AI PREDICTION FROM SERVER ---
+            const aiResponse = await fetch('/get-crop-recommendation', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ state: state })
+            });
+            const aiData = await aiResponse.json();
+            const topCrop = aiData.crop || "Rice"; // AI ka real result
+
+            // --- 4. DYNAMIC CROP LOGIC (Top 3 Recommendations) ---
+            let recommendations = [];
+            
+            // Logic based on AI result
+            if (topCrop.toLowerCase().includes('rice')) {
+                recommendations = [
+                    { name: "Rice (Paddy)", score: "96%", why: "High soil moisture retention and pH balance are ideal for water-intensive cereal crops." },
+                    { name: "Jute", score: "88%", why: "Excellent secondary crop for high-moisture regions to maintain fiber quality." },
+                    { name: "Black Gram", score: "74%", why: "Supports nitrogen fixation in humid conditions, beneficial for soil recovery." }
+                ];
+            } else if (topCrop.toLowerCase().includes('maize')) {
+                recommendations = [
+                    { name: "Maize (Corn)", score: "92%", why: "Optimized for well-drained loamy soil with current moderate hydration levels." },
+                    { name: "Cotton", score: "84%", why: "Matches the current soil aeration and temperature profile of your region." },
+                    { name: "Mung Bean", score: "78%", why: "Short-cycle crop that maximizes yield without depleting deep-soil nutrients." }
+                ];
+            } else {
+                recommendations = [
+                    { name: topCrop.toUpperCase(), score: "90%", why: "Primary recommendation based on Random Forest predictive analysis." },
+                    { name: "Mustard", score: "78%", why: "Secondary oilseed crop suitable for current pH and moisture balance." },
+                    { name: "Lentils", score: "72%", why: "Nitrogen-fixing legume to naturally enhance soil fertility for future cycles." }
+                ];
+            }
+
+            // --- 5. REPORT DESIGN (DO NOT CHANGE DESIGN) ---
+            // Page Border
+            doc.setDrawColor(5, 150, 105);
+            doc.setLineWidth(1);
+            doc.rect(5, 5, 200, 287); 
+
+            // Professional Header
+            doc.setFillColor(5, 150, 105);
+            doc.rect(5, 5, 200, 35, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.text("SOILMATE AGRI-INTELLIGENCE REPORT", 20, 22);
+            doc.setFontSize(10);
+            doc.text("IoT-Enabled Real-Time Soil Diagnostics & AI Recommendation", 20, 30);
+
+            // Metadata
+            doc.setTextColor(40, 40, 40);
+            doc.setFontSize(12);
+            doc.text(`State Context: ${state}, India`, 15, 50);
+            doc.text(`Analysis ID: SM-${Math.floor(Math.random()*9000)+1000}`, 15, 57);
+            doc.text(`Timestamp: ${new Date().toLocaleString()}`, 15, 64);
+            doc.line(15, 68, 195, 68);
+
+            // Section 1: Diagnostics Table
+            doc.setFontSize(14);
+            doc.text("1. Soil Diagnostics (Real-Time Sensors)", 15, 78);
+            doc.autoTable({
+                startY: 83,
+                head: [['Parameter', 'Sensor Value', 'Agronomic Status']],
+                body: [
+                    ['Soil Moisture', `${moisture}%`, parseFloat(moisture) > 60 ? 'Healthy' : 'Dry'],
+                    ['Soil pH Level', ph, (ph < 6.5) ? 'Acidic' : 'Optimal'],
+                    ['Nitrogen (N)', '90 ppm', 'Reference Avg'],
+                    ['Phosphorus (P)', '42 ppm', 'Reference Avg'],
+                    ['Potassium (K)', '43 ppm', 'Reference Avg']
+                ],
+                theme: 'striped',
+                headStyles: { fillColor: [5, 150, 105] }
+            });
+
+            // Section 2: AI Recommendation Table
+            let finalY = doc.lastAutoTable.finalY + 15;
+            doc.setFontSize(14);
+            doc.text("2. AI-Optimized Crop Strategy", 15, finalY);
+            doc.autoTable({
+                startY: finalY + 5,
+                head: [['Crop Name', 'Suitability %', 'Scientific Reason']],
+                body: recommendations.map(c => [c.name, c.score, c.why]),
+                styles: { fontSize: 9 },
+                columnStyles: { 2: { cellWidth: 90 } },
+                headStyles: { fillColor: [31, 41, 55] }
+            });
+
+            // Section 3: Summary Explanation
+            finalY = doc.lastAutoTable.finalY + 15;
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Expert Summary:", 15, finalY);
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(10);
+            const summaryText = `Based on the real-time pH of ${ph} and Moisture of ${moisture}%, our Random Forest model identifies ${topCrop} as the most profitable option. Planting these crops will maximize yield while maintaining the structural integrity and nutrient balance of the soil in ${state}.`;
+            doc.text(doc.splitTextToSize(summaryText, 180), 15, finalY + 7);
+
+            // SIGNATURE BLOCK
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(12);
+            doc.text("Authorized by:", 140, 260);
+            doc.setTextColor(5, 150, 105);
+            doc.setFontSize(14);
+            doc.text("Subhajit Bhattacharjee", 140, 270);
+            doc.setTextColor(100);
+            doc.setFontSize(10);
+            doc.text("Lead Agricultural Consultant", 140, 275);
+            doc.text("SoilMate Intelligence Systems", 140, 280);
+
+            // DOWNLOAD
+            doc.save(`SoilMate_Report_${state}.pdf`);
+
+        } catch (err) {
+            alert("Error: Ensure your AI Server (Port 5001) is running!");
+            console.error(err);
+        }
+    }
+
+    // Make function global
+    window.generatePDFReport = generatePDFReport;
+    </script>
+</body>
+</html>
