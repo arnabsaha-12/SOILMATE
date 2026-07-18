@@ -28,6 +28,10 @@ An intelligent, full-stack web application designed to help farmers and agricult
 * **Libraries**: Scikit-Learn, Pandas, NumPy, Flask / FastAPI (via `ml_api.py`)
 * **Serialization**: Pickle (`.pkl`) for saving/loading trained models
 
+## 📺 Project Demo
+See the complete full-stack application walkthrough in action below:
+
+<video src="node js/demo.mp4" controls width="100%"></video>
 ---
 
 ## 📁 Repository Structure Overview
@@ -47,7 +51,3 @@ An intelligent, full-stack web application designed to help farmers and agricult
 │   └── settings.html                   # User profile and account configuration dashboard
 
 
-## 📺 Project Demo
-See the complete full-stack application walkthrough in action below:
-
-<video src="node js/demo.mp4" controls width="100%"></video>
