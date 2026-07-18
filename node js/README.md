@@ -31,7 +31,7 @@ An intelligent, full-stack web application designed to help farmers and agricult
 ## 📺 Project Demo
 See the complete full-stack application walkthrough in action below:
 
-<video src="node js/demo.mp4" controls width="100%"></video>
+<video src="demo.mp4" controls width="100%"></video>
 ---
 
 ## 📁 Repository Structure Overview
