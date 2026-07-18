@@ -45,3 +45,9 @@ An intelligent, full-stack web application designed to help farmers and agricult
 │   ├── India_State_Crop_Recommendation # Regional crop tracking metrics
 │   ├── pest_disease.html               # Pest identification and control management page
 │   └── settings.html                   # User profile and account configuration dashboard
+
+
+## 📺 Project Demo
+See the complete full-stack application workflow in action below:
+
+<video src="demo.mp4" controls width="100%" poster="node js/Advance/public/index.html"></video>
